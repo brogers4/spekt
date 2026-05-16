@@ -5,6 +5,8 @@ import { useWorkspace } from '../context/WorkspaceContext'
 import { readArtifact, writeArtifact, listContextFiles, getFileLastModified } from '../lib/fs'
 import { useMarkdownEditor } from '../hooks/useMarkdownEditor'
 import GenerateArtifactModal from '../components/GenerateArtifactModal'
+import CLIInstructionsModal from '../components/CLIInstructionsModal'
+import { getCliMode } from '../lib/claude'
 
 const ARTIFACTS = [
   { key: 'prd.md', label: 'PRD', description: 'Product Requirements Document', hasTemplate: false },
@@ -247,21 +249,38 @@ export default function Project() {
       </div>
 
       {generatingArtifact && (
-        <GenerateArtifactModal
-          handle={handle}
-          slug={slug}
-          project={project}
-          artifactKey={generatingArtifact}
-          onClose={() => {
-            setGeneratingArtifact(null)
-            Promise.all(
-              ARTIFACTS.map(async ({ key }) => {
-                const content = await readArtifact(handle, slug, key)
-                return [key, content !== null]
-              })
-            ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
-          }}
-        />
+        getCliMode() ? (
+          <CLIInstructionsModal
+            handle={handle}
+            slug={slug}
+            project={project}
+            artifactKey={generatingArtifact}
+            onClose={() => setGeneratingArtifact(null)}
+            onRefresh={(found) => {
+              setGeneratingArtifact(null)
+              if (found) {
+                setArtifactStatus((prev) => ({ ...prev, [generatingArtifact]: true }))
+                navigate(`/project/${slug}/artifact/${generatingArtifact}`)
+              }
+            }}
+          />
+        ) : (
+          <GenerateArtifactModal
+            handle={handle}
+            slug={slug}
+            project={project}
+            artifactKey={generatingArtifact}
+            onClose={() => {
+              setGeneratingArtifact(null)
+              Promise.all(
+                ARTIFACTS.map(async ({ key }) => {
+                  const content = await readArtifact(handle, slug, key)
+                  return [key, content !== null]
+                })
+              ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
+            }}
+          />
+        )
       )}
     </div>
   )

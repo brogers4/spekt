@@ -2,6 +2,19 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const KEY = 'po-agent:claude-api-key'
 const KEY_PATTERN = /^sk-ant-/
+const CLI_MODE_KEY = 'po-agent:cli-mode'
+
+export function getCliMode() {
+  return localStorage.getItem(CLI_MODE_KEY) === 'true'
+}
+
+export function setCliMode(enabled) {
+  if (enabled) {
+    localStorage.setItem(CLI_MODE_KEY, 'true')
+  } else {
+    localStorage.removeItem(CLI_MODE_KEY)
+  }
+}
 
 export function getApiKey() {
   return localStorage.getItem(KEY) ?? ''

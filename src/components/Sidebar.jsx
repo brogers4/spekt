@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
-import { hasApiKey } from '../lib/claude'
+import { hasApiKey, getCliMode } from '../lib/claude'
 
 export default function Sidebar() {
   const { handle, projects } = useWorkspace()
   const apiKeySet = hasApiKey()
+  const cliMode = getCliMode()
+  const showWarning = !cliMode && !apiKeySet
   const [projectsOpen, setProjectsOpen] = useState(true)
   const navigate = useNavigate()
 
@@ -110,7 +112,7 @@ export default function Sidebar() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
           </svg>
           <span className="flex-1">Settings</span>
-          {!apiKeySet && (
+          {showWarning && (
             <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" title="Claude API key not set" />
           )}
         </NavLink>
