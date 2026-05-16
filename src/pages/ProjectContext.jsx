@@ -94,7 +94,7 @@ export default function ProjectContext() {
             return (
               <div
                 key={filename}
-                className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
+                className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all"
               >
                 <button
                   onClick={() => navigate(`/project/${slug}/context/${filename}`)}

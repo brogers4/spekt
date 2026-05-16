@@ -41,8 +41,7 @@ export default function NewProject() {
         Back
       </button>
 
-      <p className="text-sm font-medium text-indigo-600 uppercase tracking-wide">Step 1</p>
-      <h2 className="mt-2 text-3xl font-bold text-gray-900">New Project</h2>
+      <h2 className="text-3xl font-bold text-gray-900">New Project</h2>
       <p className="mt-2 text-gray-500">Start with the basics. More details come later.</p>
 
       {!handle && (

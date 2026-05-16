@@ -34,7 +34,7 @@ export async function createProject(workspaceHandle, { name, description }) {
   const slug = slugify(name)
   const projectDir = await workspaceHandle.getDirectoryHandle(slug, { create: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const date = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
   const content = [
     `# ${name}`,
     '',
@@ -82,7 +82,7 @@ export async function writeArtifact(workspaceHandle, projectSlug, filename, cont
 export async function updateProject(workspaceHandle, slug, { name, description }) {
   const existing = await readArtifact(workspaceHandle, slug, 'README.md')
   const createdMatch = existing?.match(/\*\*Created:\*\*\s+(.+)/)
-  const created = createdMatch ? createdMatch[1].trim() : new Date().toISOString().split('T')[0]
+  const created = createdMatch ? createdMatch[1].trim() : new Date().toLocaleDateString('en-CA')
 
   const content = [
     `# ${name}`,
