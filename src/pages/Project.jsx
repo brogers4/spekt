@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { readArtifact, writeArtifact, listContextFiles, getFileLastModified } from '../lib/fs'
+import { useMarkdownEditor } from '../hooks/useMarkdownEditor'
 
 const ARTIFACTS = [
   { key: 'prd.md', label: 'PRD', description: 'Product Requirements Document' },
@@ -20,12 +21,15 @@ export default function Project() {
   const [artifactStatus, setArtifactStatus] = useState({})
   const [contextCount, setContextCount] = useState(null)
   const [lastModified, setLastModified] = useState(null)
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState('')
-  const [saving, setSaving] = useState(false)
-  const textareaRef = useRef(null)
 
   const project = projects.find((p) => p.slug === slug)
+
+  const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({
+    onSave: async (content) => {
+      await writeArtifact(handle, slug, 'README.md', content)
+      setReadme(content)
+    },
+  })
 
   useEffect(() => {
     if (!handle || !slug) return
@@ -39,36 +43,6 @@ export default function Project() {
       })
     ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
   }, [handle, slug])
-
-  function startEditing() {
-    setDraft(readme ?? '')
-    setEditing(true)
-    setTimeout(() => textareaRef.current?.focus(), 0)
-  }
-
-  function cancelEditing() {
-    setEditing(false)
-    setDraft('')
-  }
-
-  async function saveEditing() {
-    setSaving(true)
-    await writeArtifact(handle, slug, 'README.md', draft)
-    setReadme(draft)
-    setEditing(false)
-    setDraft('')
-    setSaving(false)
-  }
-
-  function handleKeyDown(e) {
-    // Cmd/Ctrl+S to save
-    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-      e.preventDefault()
-      saveEditing()
-    }
-    // Escape to cancel
-    if (e.key === 'Escape') cancelEditing()
-  }
 
   if (!project) {
     return (
@@ -135,7 +109,7 @@ export default function Project() {
           {/* Edit / Save / Cancel controls */}
           {!editing ? (
             <button
-              onClick={startEditing}
+              onClick={() => startEditing(readme)}
               className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors px-2 py-1 rounded hover:bg-gray-100"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -146,19 +120,23 @@ export default function Project() {
           ) : (
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400 hidden sm:block">⌘S to save · Esc to cancel</span>
-              <button
-                onClick={cancelEditing}
-                className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveEditing}
-                disabled={saving}
-                className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-3 py-1 rounded transition-colors"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
+              <button onClick={cancelEditing} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100 transition-colors">Cancel</button>
+              {saved ? (
+                <span className="text-xs text-green-600 flex items-center gap-1 px-2">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                  Saved
+                </span>
+              ) : (
+                <button
+                  onClick={save}
+                  disabled={saving}
+                  className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-3 py-1 rounded transition-colors"
+                >
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -170,7 +148,7 @@ export default function Project() {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full px-6 py-5 font-mono text-sm text-gray-800 leading-relaxed resize-none outline-none min-h-64 bg-white"
-            style={{ height: Math.max(256, draft.split('\n').length * 22 + 40) }}
+            style={{ height: textareaHeight }}
             spellCheck={false}
           />
         ) : (
