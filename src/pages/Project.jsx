@@ -1,26 +1,29 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { readArtifact, writeArtifact, listContextFiles, getFileLastModified } from '../lib/fs'
 import { useMarkdownEditor } from '../hooks/useMarkdownEditor'
+import GenerateArtifactModal from '../components/GenerateArtifactModal'
 
 const ARTIFACTS = [
-  { key: 'prd.md', label: 'PRD', description: 'Product Requirements Document' },
-  { key: 'prfaq.md', label: 'PRFAQ', description: 'Press Release & FAQ' },
-  { key: 'epics.md', label: 'Epics', description: 'High-level feature groupings' },
-  { key: 'user-stories.md', label: 'User Stories', description: 'Granular development tasks' },
-  { key: 'backlog.md', label: 'Backlog', description: 'Prioritized work queue' },
+  { key: 'prd.md', label: 'PRD', description: 'Product Requirements Document', hasTemplate: false },
+  { key: 'prfaq.md', label: 'PRFAQ', description: 'Press Release & FAQ', hasTemplate: true },
+  { key: 'epics.md', label: 'Epics', description: 'High-level feature groupings', hasTemplate: false },
+  { key: 'user-stories.md', label: 'User Stories', description: 'Granular development tasks', hasTemplate: false },
+  { key: 'backlog.md', label: 'Backlog', description: 'Prioritized work queue', hasTemplate: false },
 ]
 
 export default function Project() {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { handle, projects } = useWorkspace()
   const [readme, setReadme] = useState(null)
   const [artifactStatus, setArtifactStatus] = useState({})
   const [contextCount, setContextCount] = useState(null)
   const [lastModified, setLastModified] = useState(null)
+  const [generatingArtifact, setGeneratingArtifact] = useState(null)
 
   const project = projects.find((p) => p.slug === slug)
 
@@ -43,6 +46,13 @@ export default function Project() {
       })
     ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
   }, [handle, slug])
+
+  useEffect(() => {
+    if (location.state?.generateArtifact) {
+      setGeneratingArtifact(location.state.generateArtifact)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state])
 
   if (!project) {
     return (
@@ -188,27 +198,71 @@ export default function Project() {
         Artifacts
       </h2>
       <div className="mt-3 space-y-2">
-        {ARTIFACTS.map(({ key, label, description }) => (
-          <div
-            key={key}
-            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
-          >
-            <div>
-              <p className="font-medium text-gray-800 text-sm">{label}</p>
-              <p className="text-xs text-gray-400">{description}</p>
+        {ARTIFACTS.map(({ key, label, description, hasTemplate }) => {
+          const generated = artifactStatus[key]
+          const clickable = generated || hasTemplate
+
+          if (clickable) {
+            return (
+              <button
+                key={key}
+                onClick={() => generated
+                  ? navigate(`/project/${slug}/artifact/${key}`)
+                  : setGeneratingArtifact(key)
+                }
+                className="w-full flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group text-left"
+              >
+                <div>
+                  <p className="font-medium text-gray-800 text-sm group-hover:text-indigo-700 transition-colors">{label}</p>
+                  <p className="text-xs text-gray-400">{description}</p>
+                </div>
+                {generated ? (
+                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full shrink-0">
+                    Generated
+                  </span>
+                ) : (
+                  <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full shrink-0">
+                    Generate
+                  </span>
+                )}
+              </button>
+            )
+          }
+
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm opacity-60"
+            >
+              <div>
+                <p className="font-medium text-gray-800 text-sm">{label}</p>
+                <p className="text-xs text-gray-400">{description}</p>
+              </div>
+              <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full shrink-0">
+                Coming soon
+              </span>
             </div>
-            {artifactStatus[key] ? (
-              <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                Generated
-              </span>
-            ) : (
-              <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-                Not started
-              </span>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
+
+      {generatingArtifact && (
+        <GenerateArtifactModal
+          handle={handle}
+          slug={slug}
+          project={project}
+          artifactKey={generatingArtifact}
+          onClose={() => {
+            setGeneratingArtifact(null)
+            Promise.all(
+              ARTIFACTS.map(async ({ key }) => {
+                const content = await readArtifact(handle, slug, key)
+                return [key, content !== null]
+              })
+            ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
+          }}
+        />
+      )}
     </div>
   )
 }

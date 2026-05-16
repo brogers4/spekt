@@ -7,6 +7,8 @@ import Project from './pages/Project'
 import ProjectSettings from './pages/ProjectSettings'
 import ProjectContext from './pages/ProjectContext'
 import ContextNote from './pages/ContextNote'
+import Settings from './pages/Settings'
+import ArtifactView from './pages/ArtifactView'
 
 export default function App() {
   return (
@@ -25,6 +27,8 @@ export default function App() {
           <Route path="/project/:slug/settings" element={<ProjectSettings />} />
           <Route path="/project/:slug/context" element={<ProjectContext />} />
           <Route path="/project/:slug/context/:filename" element={<ContextNote />} />
+          <Route path="/project/:slug/artifact/:key" element={<ArtifactView />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </div>
