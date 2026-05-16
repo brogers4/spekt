@@ -27,3 +27,9 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.local.json
+
+# Workspace data (user-generated project files from the app)
+product-backlog/
