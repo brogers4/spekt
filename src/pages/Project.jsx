@@ -20,7 +20,7 @@ export default function Project() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { handle, projects } = useWorkspace()
+  const { projects } = useWorkspace()
   const [readme, setReadme] = useState(null)
   const [artifactStatus, setArtifactStatus] = useState({})
   const [contextCount, setContextCount] = useState(null)
@@ -31,23 +31,23 @@ export default function Project() {
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({
     onSave: async (content) => {
-      await writeArtifact(handle, slug, 'README.md', content)
+      await writeArtifact(slug, 'README.md', content)
       setReadme(content)
     },
   })
 
   useEffect(() => {
-    if (!handle || !slug) return
-    readArtifact(handle, slug, 'README.md').then(setReadme)
-    getFileLastModified(handle, slug, 'README.md').then(setLastModified)
-    listContextFiles(handle, slug).then((files) => setContextCount(files.length))
+    if (!slug) return
+    readArtifact(slug, 'README.md').then(setReadme)
+    getFileLastModified(slug, 'README.md').then(setLastModified)
+    listContextFiles(slug).then((files) => setContextCount(files.length))
     Promise.all(
       ARTIFACTS.map(async ({ key }) => {
-        const content = await readArtifact(handle, slug, key)
+        const content = await readArtifact(slug, key)
         return [key, content !== null]
       })
     ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))
-  }, [handle, slug])
+  }, [slug])
 
   useEffect(() => {
     if (location.state?.generateArtifact) {
@@ -251,7 +251,6 @@ export default function Project() {
       {generatingArtifact && (
         getCliMode() ? (
           <CLIInstructionsModal
-            handle={handle}
             slug={slug}
             project={project}
             artifactKey={generatingArtifact}
@@ -266,7 +265,6 @@ export default function Project() {
           />
         ) : (
           <GenerateArtifactModal
-            handle={handle}
             slug={slug}
             project={project}
             artifactKey={generatingArtifact}
@@ -274,7 +272,7 @@ export default function Project() {
               setGeneratingArtifact(null)
               Promise.all(
                 ARTIFACTS.map(async ({ key }) => {
-                  const content = await readArtifact(handle, slug, key)
+                  const content = await readArtifact(slug, key)
                   return [key, content !== null]
                 })
               ).then((entries) => setArtifactStatus(Object.fromEntries(entries)))

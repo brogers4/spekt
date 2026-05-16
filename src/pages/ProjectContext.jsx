@@ -52,7 +52,7 @@ function FileIcon({ filename }) {
 export default function ProjectContext() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { handle, projects } = useWorkspace()
+  const { projects } = useWorkspace()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -64,16 +64,16 @@ export default function ProjectContext() {
   const project = projects.find((p) => p.slug === slug)
 
   useEffect(() => {
-    if (!handle || !slug) return
-    listContextFiles(handle, slug).then((f) => { setFiles(f); setLoading(false) })
-  }, [handle, slug])
+    if (!slug) return
+    listContextFiles(slug).then((f) => { setFiles(f); setLoading(false) })
+  }, [slug])
 
   async function handleUpload(fileList) {
     if (!fileList?.length) return
     setUploading(true)
     const uploaded = []
     for (const file of fileList) {
-      const result = await uploadContextFile(handle, slug, file)
+      const result = await uploadContextFile(slug, file)
       uploaded.push(result)
     }
     setFiles((prev) => {
@@ -85,7 +85,7 @@ export default function ProjectContext() {
   }
 
   async function handleDelete(filename) {
-    await deleteContextFile(handle, slug, filename)
+    await deleteContextFile(slug, filename)
     setFiles((prev) => prev.filter((f) => f.filename !== filename))
     setConfirmDelete(null)
   }

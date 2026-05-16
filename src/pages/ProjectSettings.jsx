@@ -6,7 +6,7 @@ import { updateProject } from '../lib/fs'
 export default function ProjectSettings() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { handle, projects, refreshProjects, chooseWorkspace } = useWorkspace()
+  const { projects, refreshProjects } = useWorkspace()
 
   const project = projects.find((p) => p.slug === slug)
 
@@ -39,9 +39,9 @@ export default function ProjectSettings() {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!handle || !form.name.trim()) return
+    if (!form.name.trim()) return
     setSaving(true)
-    await updateProject(handle, slug, form)
+    await updateProject(slug, form)
     await refreshProjects()
     setSaving(false)
     setSaved(true)
@@ -126,7 +126,7 @@ export default function ProjectSettings() {
           <div className="px-5 py-4">
             <p className="text-sm font-medium text-gray-700 mb-1">Folder</p>
             <p className="font-mono text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-3 py-2">
-              {handle?.name ?? '—'}/{slug}
+              projects/{slug}
             </p>
             <p className="mt-1.5 text-xs text-gray-400">
               Folder name is set at creation and cannot be renamed.
@@ -156,34 +156,6 @@ export default function ProjectSettings() {
         </form>
       </section>
 
-      {/* Workspace */}
-      <section className="mt-10">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-          Workspace
-        </h2>
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-100">
-          <div className="px-5 py-4 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Active Folder</p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {handle ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
-                    {handle.name}
-                  </span>
-                ) : 'No folder selected'}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={chooseWorkspace}
-              className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Change
-            </button>
-          </div>
-        </div>
-      </section>
 
     </div>
   )

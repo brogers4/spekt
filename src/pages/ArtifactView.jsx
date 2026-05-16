@@ -16,7 +16,7 @@ const ARTIFACT_LABELS = {
 export default function ArtifactView() {
   const { slug, key } = useParams()
   const navigate = useNavigate()
-  const { handle, projects } = useWorkspace()
+  const { projects } = useWorkspace()
   const [content, setContent] = useState(null)
   const [generating, setGenerating] = useState(false)
 
@@ -26,15 +26,15 @@ export default function ArtifactView() {
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({
     onSave: async (text) => {
-      await writeArtifact(handle, slug, filename, text)
+      await writeArtifact(slug, filename, text)
       setContent(text)
     },
   })
 
   useEffect(() => {
-    if (!handle || !slug || !filename) return
-    readArtifact(handle, slug, filename).then((text) => setContent(text ?? ''))
-  }, [handle, slug, filename])
+    if (!slug || !filename) return
+    readArtifact(slug, filename).then((text) => setContent(text ?? ''))
+  }, [slug, filename])
 
   if (!project) {
     return (

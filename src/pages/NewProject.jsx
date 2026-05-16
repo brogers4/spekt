@@ -5,7 +5,7 @@ import { createProject } from '../lib/fs'
 
 export default function NewProject() {
   const navigate = useNavigate()
-  const { handle, chooseWorkspace, refreshProjects } = useWorkspace()
+  const { refreshProjects } = useWorkspace()
   const [form, setForm] = useState({ name: '', description: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -16,11 +16,10 @@ export default function NewProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!handle) return
     setSaving(true)
     setError(null)
     try {
-      const project = await createProject(handle, form)
+      const project = await createProject(form)
       await refreshProjects()
       navigate(`/project/${project.slug}`)
     } catch (err) {
@@ -43,16 +42,6 @@ export default function NewProject() {
 
       <h2 className="text-3xl font-bold text-gray-900">New Project</h2>
       <p className="mt-2 text-gray-500">Start with the basics. More details come later.</p>
-
-      {!handle && (
-        <div className="mt-6 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-          No workspace selected.{' '}
-          <button onClick={chooseWorkspace} className="underline font-medium">
-            Choose a folder
-          </button>{' '}
-          before creating a project.
-        </div>
-      )}
 
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div>
@@ -90,7 +79,7 @@ export default function NewProject() {
         <div className="flex items-center justify-end pt-2">
           <button
             type="submit"
-            disabled={!form.name.trim() || !handle || saving}
+            disabled={!form.name.trim() || saving}
             className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? 'Creating…' : 'Create Project'}

@@ -76,9 +76,11 @@ Rules:
   )
 
   const text = message.content[0].text.trim()
+  const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
   try {
-    return JSON.parse(text)
+    return JSON.parse(stripped)
   } catch {
+    console.error('Failed to parse unknowns response:', text)
     return []
   }
 }

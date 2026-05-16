@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { isSupported } from './lib/fs'
 import Sidebar from './components/Sidebar'
 import Home from './pages/Home'
 import NewProject from './pages/NewProject'
@@ -15,11 +14,6 @@ export default function App() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        {!isSupported() && (
-          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-sm text-amber-800">
-            PO Agent requires Chrome or Edge to access your local filesystem. Some features won't work in this browser.
-          </div>
-        )}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/new-project" element={<NewProject />} />

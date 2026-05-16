@@ -1,35 +1,12 @@
 import { useState } from 'react'
 import { readArtifact } from '../lib/fs'
 
-const ARTIFACT_COMMANDS = {
-  'prfaq.md': '/generate-prfaq',
-}
-
-export default function CLIInstructionsModal({ handle, slug, project, artifactKey, onClose, onRefresh }) {
-  const command = ARTIFACT_COMMANDS[artifactKey] ?? `/generate-${artifactKey.replace('.md', '')}`
+export default function CLIInstructionsModal({ slug, project, artifactKey, onClose, onRefresh }) {
   const label = artifactKey === 'prfaq.md' ? 'PRFAQ' : artifactKey
-
-  const steps = [
-    {
-      text: 'Open a terminal and navigate to your PO Agent workspace folder',
-      code: null,
-    },
-    {
-      text: `Change into the project directory`,
-      code: `cd ${slug}`,
-    },
-    {
-      text: 'Open Claude Code',
-      code: 'claude',
-    },
-    {
-      text: `Run the generate command`,
-      code: command,
-    },
-  ]
+  const cmd = `/generate-${artifactKey.replace('.md', '')} ${slug}`
 
   async function refresh() {
-    const content = await readArtifact(handle, slug, artifactKey)
+    const content = await readArtifact(slug, artifactKey)
     onRefresh(content !== null)
   }
 
@@ -48,25 +25,13 @@ export default function CLIInstructionsModal({ handle, slug, project, artifactKe
 
         <div className="px-6 py-5 space-y-4">
           <p className="text-sm text-gray-600">
-            Run the following steps in your terminal to generate the {label} using your Claude Pro subscription.
+            Run this command in Claude Code — works from any directory:
           </p>
 
-          <ol className="space-y-3">
-            {steps.map((step, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <div className="flex-1 space-y-1.5">
-                  <p className="text-sm text-gray-700">{step.text}</p>
-                  {step.code && <CopySnippet code={step.code} />}
-                </div>
-              </li>
-            ))}
-          </ol>
+          <CopySnippet code={cmd} />
 
           <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-800">
-            When Claude Code finishes, come back here and click <strong>Refresh</strong> to view the generated file.
+            When Claude Code finishes writing the file, come back here and click <strong>Refresh</strong> to open it.
           </div>
         </div>
 
@@ -97,7 +62,7 @@ function CopySnippet({ code }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-md bg-gray-900 px-3 py-2 text-xs font-mono text-gray-100">
+    <div className="flex gap-2 items-center rounded-md bg-gray-900 px-3 py-2 text-xs font-mono text-gray-100">
       <span className="flex-1 select-all">{code}</span>
       <button
         onClick={copy}

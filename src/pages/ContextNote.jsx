@@ -17,7 +17,7 @@ function getFileCategory(filename) {
 export default function ContextNote() {
   const { slug, filename } = useParams()
   const navigate = useNavigate()
-  const { handle, projects } = useWorkspace()
+  const { projects } = useWorkspace()
 
   const creating = filename === 'new'
   const category = creating ? 'note' : getFileCategory(decodeURIComponent(filename))
@@ -36,7 +36,7 @@ export default function ContextNote() {
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save: saveExisting, handleKeyDown } = useMarkdownEditor({
     onSave: async (text) => {
-      await writeContextFile(handle, slug, decodedFilename, text)
+      await writeContextFile(slug, decodedFilename, text)
       setContent(text)
     },
     allowEsc: !creating,
@@ -44,26 +44,25 @@ export default function ContextNote() {
 
   useEffect(() => {
     if (creating) { setTimeout(() => titleRef.current?.focus(), 0); return }
-    if (!handle || !slug) return
+    if (!slug) return
 
     if (category === 'note' || category === 'text') {
-      readContextFile(handle, slug, decodedFilename).then((text) => {
+      readContextFile(slug, decodedFilename).then((text) => {
         setContent(text ?? '')
       })
     } else {
-      readContextFileAsObjectUrl(handle, slug, decodedFilename).then((result) => {
+      readContextFileAsObjectUrl(slug, decodedFilename).then((result) => {
         if (result) setObjectUrl(result.url)
       })
     }
 
     return () => { if (objectUrl) URL.revokeObjectURL(objectUrl) }
-  }, [handle, slug, filename])
+  }, [slug, filename])
 
   async function saveNew() {
-    if (!handle) return
     const fileSlug = slugify(title) || `note-${Date.now()}`
     const newFilename = `${fileSlug}.md`
-    await writeContextFile(handle, slug, newFilename, `# ${title}\n\n${draft}`)
+    await writeContextFile(slug, newFilename, `# ${title}\n\n${draft}`)
     navigate(`/project/${slug}/context/${newFilename}`, { replace: true })
   }
 

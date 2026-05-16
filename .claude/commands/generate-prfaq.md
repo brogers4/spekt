@@ -1,17 +1,20 @@
 ---
-description: Generate a PRFAQ for the current project using the working-backwards framework
-argument-hint: [optional: brief product description or focus area]
+description: Generate a PRFAQ for a project using the working-backwards framework
+argument-hint: [project-name]
 ---
 
 # Generate PRFAQ
 
-Generate a PRFAQ document for this project following the working-backwards methodology and PO Agent template rules.
-
 $ARGUMENTS
+
+**Locate the project root and template:**
+
+1. If `projects/$ARGUMENTS` exists as a directory, use it as the project root and load the template from `src/templates/prfaq.md` (you are running from the PO Agent root).
+2. Otherwise, use `.` as the project root and load the template from `../../src/templates/prfaq.md` (you are already inside the project folder).
 
 Follow the full generate-prfaq skill instructions:
 
-1. **Gather context** — Read all files in `context/`, check memory for previously captured project facts, and load `src/templates/prfaq.md` if present.
+1. **Gather context** — Read `README.md` and all files in `context/` within the project root. Load the PRFAQ template from the path determined above. Check memory for previously captured project facts.
 
 2. **Identify unknowns** — For anything that is genuinely unknown (company name, target customer, launch date, dateline, spokesperson, website URL, FAQ answers), do not invent or silently use a placeholder. Prompt the user with:
    > **[Unknown item]** — How would you like to handle this?

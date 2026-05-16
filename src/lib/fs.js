@@ -1,199 +1,102 @@
-import { saveWorkspaceHandle, loadWorkspaceHandle } from './storage'
-
-export function isSupported() {
-  return typeof window !== 'undefined' && 'showDirectoryPicker' in window
-}
-
 export function slugify(name) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export async function pickWorkspace() {
-  const handle = await window.showDirectoryPicker({ mode: 'readwrite' })
-  await saveWorkspaceHandle(handle)
-  return handle
+async function api(path, options) {
+  return fetch(path, options)
 }
 
-export async function getWorkspaceHandle() {
-  const handle = await loadWorkspaceHandle()
-  if (!handle) return null
-
-  const permission = await handle.queryPermission({ mode: 'readwrite' })
-  if (permission === 'granted') return handle
-
-  const request = await handle.requestPermission({ mode: 'readwrite' })
-  return request === 'granted' ? handle : null
+export async function listProjects() {
+  const res = await api('/api/projects')
+  if (!res.ok) throw new Error('Failed to list projects')
+  return res.json()
 }
 
-export async function createProject(workspaceHandle, { name, description }) {
-  const slug = slugify(name)
-  const projectDir = await workspaceHandle.getDirectoryHandle(slug, { create: true })
-
-  const date = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
-  const content = [
-    `# ${name}`,
-    '',
-    `**Created:** ${date}`,
-    '',
-    '## Description',
-    '',
-    description || '_No description provided._',
-    '',
-  ].join('\n')
-
-  const fileHandle = await projectDir.getFileHandle('README.md', { create: true })
-  const writable = await fileHandle.createWritable()
-  await writable.write(content)
-  await writable.close()
-
-  return { slug, name, description, created: date }
+export async function createProject({ name, description }) {
+  const res = await api('/api/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error ?? 'Failed to create project')
+  return data
 }
 
-export async function listProjects(workspaceHandle) {
-  const projects = []
-  for await (const [name, handle] of workspaceHandle.entries()) {
-    if (handle.kind !== 'directory') continue
-    try {
-      const readmeHandle = await handle.getFileHandle('README.md')
-      const file = await readmeHandle.getFile()
-      const text = await file.text()
-      const project = parseReadme(text, name)
-      projects.push(project)
-    } catch {
-      // directory exists but has no README.md — skip it
-    }
-  }
-  return projects.sort((a, b) => (b.created || '').localeCompare(a.created || ''))
+export async function readArtifact(slug, filename) {
+  const res = await api(`/api/projects/${slug}/files/${encodeURIComponent(filename)}`)
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error('Failed to read file')
+  const { content } = await res.json()
+  return content
 }
 
-export async function writeArtifact(workspaceHandle, projectSlug, filename, content) {
-  const projectDir = await workspaceHandle.getDirectoryHandle(projectSlug)
-  const fileHandle = await projectDir.getFileHandle(filename, { create: true })
-  const writable = await fileHandle.createWritable()
-  await writable.write(content)
-  await writable.close()
+export async function writeArtifact(slug, filename, content) {
+  const res = await api(`/api/projects/${slug}/files/${encodeURIComponent(filename)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+  if (!res.ok) throw new Error('Failed to write file')
 }
 
-export async function updateProject(workspaceHandle, slug, { name, description }) {
-  const existing = await readArtifact(workspaceHandle, slug, 'README.md')
-  const createdMatch = existing?.match(/\*\*Created:\*\*\s+(.+)/)
-  const created = createdMatch ? createdMatch[1].trim() : new Date().toLocaleDateString('en-CA')
-
-  const content = [
-    `# ${name}`,
-    '',
-    `**Created:** ${created}`,
-    '',
-    '## Description',
-    '',
-    description || '_No description provided._',
-    '',
-  ].join('\n')
-
-  await writeArtifact(workspaceHandle, slug, 'README.md', content)
-  return { slug, name, description, created }
+export async function updateProject(slug, { name, description }) {
+  const existing = await readArtifact(slug, 'README.md') ?? ''
+  const createdMatch = existing.match(/\*\*Created:\*\* (\d{4}-\d{2}-\d{2})/)
+  const created = createdMatch?.[1] ?? new Date().toISOString().slice(0, 10)
+  const readme = `# ${name}\n\n**Created:** ${created}\n\n## Description\n\n${description ?? ''}\n`
+  await writeArtifact(slug, 'README.md', readme)
+  return { slug, name, created, description: description ?? '' }
 }
 
-export async function readArtifact(workspaceHandle, projectSlug, filename) {
-  try {
-    const projectDir = await workspaceHandle.getDirectoryHandle(projectSlug)
-    const fileHandle = await projectDir.getFileHandle(filename)
-    const file = await fileHandle.getFile()
-    return file.text()
-  } catch {
-    return null
-  }
+export async function getFileLastModified(slug, filename) {
+  const res = await api(`/api/projects/${slug}/files/${encodeURIComponent(filename)}/meta`)
+  if (res.status === 404) return null
+  if (!res.ok) return null
+  const { lastModified } = await res.json()
+  return lastModified
 }
 
-export async function getFileLastModified(workspaceHandle, projectSlug, filename) {
-  try {
-    const projectDir = await workspaceHandle.getDirectoryHandle(projectSlug)
-    const fileHandle = await projectDir.getFileHandle(filename)
-    const file = await fileHandle.getFile()
-    return file.lastModified
-  } catch {
-    return null
-  }
+export async function listContextFiles(slug) {
+  const res = await api(`/api/projects/${slug}/context`)
+  if (!res.ok) return []
+  return res.json()
 }
 
-async function getContextDir(workspaceHandle, projectSlug, { create = false } = {}) {
-  const projectDir = await workspaceHandle.getDirectoryHandle(projectSlug)
-  return projectDir.getDirectoryHandle('context', { create })
+export async function uploadContextFile(slug, file) {
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await api(`/api/projects/${slug}/context`, { method: 'POST', body: fd })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error ?? 'Failed to upload file')
+  return data
 }
 
-export async function listContextFiles(workspaceHandle, projectSlug) {
-  try {
-    const contextDir = await getContextDir(workspaceHandle, projectSlug)
-    const files = []
-    for await (const [name, handle] of contextDir.entries()) {
-      if (handle.kind !== 'file') continue
-      const file = await handle.getFile()
-      files.push({ filename: name, lastModified: file.lastModified, size: file.size })
-    }
-    return files.sort((a, b) => b.lastModified - a.lastModified)
-  } catch {
-    return []
-  }
+export async function readContextFile(slug, filename) {
+  const res = await api(`/api/projects/${slug}/context/${encodeURIComponent(filename)}/text`)
+  if (res.status === 404) return null
+  if (!res.ok) return null
+  const { content } = await res.json()
+  return content
 }
 
-export async function uploadContextFile(workspaceHandle, projectSlug, file) {
-  const contextDir = await getContextDir(workspaceHandle, projectSlug, { create: true })
-  const fileHandle = await contextDir.getFileHandle(file.name, { create: true })
-  const writable = await fileHandle.createWritable()
-  await writable.write(file)
-  await writable.close()
-  return { filename: file.name, lastModified: file.lastModified, size: file.size }
+export async function readContextFileAsObjectUrl(slug, filename) {
+  const res = await api(`/api/projects/${slug}/context/${encodeURIComponent(filename)}`)
+  if (!res.ok) return null
+  const mimeType = res.headers.get('Content-Type') ?? 'application/octet-stream'
+  const blob = await res.blob()
+  return { url: URL.createObjectURL(blob), mimeType }
 }
 
-export async function readContextFileAsObjectUrl(workspaceHandle, projectSlug, filename) {
-  try {
-    const contextDir = await getContextDir(workspaceHandle, projectSlug)
-    const fileHandle = await contextDir.getFileHandle(filename)
-    const file = await fileHandle.getFile()
-    return { url: URL.createObjectURL(file), mimeType: file.type }
-  } catch {
-    return null
-  }
+export async function writeContextFile(slug, filename, content) {
+  const res = await api(`/api/projects/${slug}/context/${encodeURIComponent(filename)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+  if (!res.ok) throw new Error('Failed to write context file')
 }
 
-export async function readContextFile(workspaceHandle, projectSlug, filename) {
-  try {
-    const contextDir = await getContextDir(workspaceHandle, projectSlug)
-    const fileHandle = await contextDir.getFileHandle(filename)
-    const file = await fileHandle.getFile()
-    return file.text()
-  } catch {
-    return null
-  }
-}
-
-export async function writeContextFile(workspaceHandle, projectSlug, filename, content) {
-  const contextDir = await getContextDir(workspaceHandle, projectSlug, { create: true })
-  const fileHandle = await contextDir.getFileHandle(filename, { create: true })
-  const writable = await fileHandle.createWritable()
-  await writable.write(content)
-  await writable.close()
-}
-
-export async function deleteContextFile(workspaceHandle, projectSlug, filename) {
-  const contextDir = await getContextDir(workspaceHandle, projectSlug)
-  await contextDir.removeEntry(filename)
-}
-
-function parseReadme(text, slug) {
-  const nameMatch = text.match(/^#\s+(.+)$/m)
-  const createdMatch = text.match(/\*\*Created:\*\*\s+(.+)/)
-  const descMatch = text.match(/## Description\s+\n+([\s\S]+?)(\n##|$)/)
-
-  return {
-    slug,
-    name: nameMatch ? nameMatch[1].trim() : slug,
-    created: createdMatch ? createdMatch[1].trim() : null,
-    description: descMatch ? descMatch[1].trim() : null,
-  }
+export async function deleteContextFile(slug, filename) {
+  await api(`/api/projects/${slug}/context/${encodeURIComponent(filename)}`, { method: 'DELETE' })
 }

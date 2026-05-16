@@ -4,7 +4,7 @@ import { useWorkspace } from '../context/WorkspaceContext'
 import { hasApiKey, getCliMode } from '../lib/claude'
 
 export default function Sidebar() {
-  const { handle, projects } = useWorkspace()
+  const { projects } = useWorkspace()
   const apiKeySet = hasApiKey()
   const cliMode = getCliMode()
   const showWarning = !cliMode && !apiKeySet
@@ -118,14 +118,8 @@ export default function Sidebar() {
         </NavLink>
 
         <p className="px-3 text-xs text-gray-600 truncate">
-          {handle ? (
-            <>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5 align-middle" />
-              {handle.name}
-            </>
-          ) : (
-            <span>No workspace</span>
-          )}
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5 align-middle" />
+          projects/
         </p>
       </div>
     </aside>

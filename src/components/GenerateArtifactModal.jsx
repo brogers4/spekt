@@ -6,7 +6,7 @@ import prfaqTemplate from '../templates/prfaq.md?raw'
 
 const PHASES = { preflight: 0, gathering: 1, questioning: 2, generating: 3 }
 
-export default function GenerateArtifactModal({ handle, slug, project, artifactKey, onClose }) {
+export default function GenerateArtifactModal({ slug, project, artifactKey, onClose }) {
   const navigate = useNavigate()
   const [phase, setPhase] = useState(PHASES.preflight)
   const [contextCount, setContextCount] = useState(null)
@@ -19,17 +19,17 @@ export default function GenerateArtifactModal({ handle, slug, project, artifactK
   const label = artifactKey === 'prfaq.md' ? 'PRFAQ' : artifactKey
 
   useEffect(() => {
-    listContextFiles(handle, slug).then((f) => setContextCount(f.length))
+    listContextFiles(slug).then((f) => setContextCount(f.length))
     return () => abortRef.current?.abort()
-  }, [handle, slug])
+  }, [slug])
 
   async function loadContext() {
-    const readme = await readArtifact(handle, slug, 'README.md')
-    const files = await listContextFiles(handle, slug)
+    const readme = await readArtifact(slug, 'README.md')
+    const files = await listContextFiles(slug)
     const contextFiles = await Promise.all(
       files.map(async (f) => {
         if (!f.filename.match(/\.(md|txt|csv|json|xml|html|js|ts|py|rb|sh)$/i)) return null
-        const content = await readContextFile(handle, slug, f.filename)
+        const content = await readContextFile(slug, f.filename)
         return content ? { filename: f.filename, content } : null
       })
     )
@@ -52,8 +52,8 @@ export default function GenerateArtifactModal({ handle, slug, project, artifactK
         setPhase(PHASES.questioning)
       }
     } catch (err) {
-      if (err.name !== 'AbortError') setError(err.message)
-      if (err.name === 'AbortError') setPhase(PHASES.preflight)
+      setPhase(PHASES.preflight)
+      if (err.name !== 'AbortError') setError(err.message || 'Something went wrong.')
     }
   }
 
@@ -69,15 +69,15 @@ export default function GenerateArtifactModal({ handle, slug, project, artifactK
       )
       await runGeneration({ readme, contextFiles, answers: resolvedAnswers, template })
     } catch (err) {
-      if (err.name !== 'AbortError') setError(err.message)
-      if (err.name === 'AbortError') setPhase(PHASES.questioning)
+      setPhase(PHASES.questioning)
+      if (err.name !== 'AbortError') setError(err.message || 'Something went wrong.')
     }
   }
 
   async function runGeneration({ readme, contextFiles, answers, template }) {
     setPhase(PHASES.generating)
     const result = await generatePrfaq({ readme, contextFiles, answers, template, signal: abortRef.current.signal })
-    await writeArtifact(handle, slug, artifactKey, result)
+    await writeArtifact(slug, artifactKey, result)
     onClose()
     navigate(`/project/${slug}/artifact/${artifactKey}`)
   }
