@@ -1,12 +1,52 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
-import { listContextFiles, deleteContextFile } from '../lib/fs'
+import { listContextFiles, uploadContextFile, deleteContextFile } from '../lib/fs'
 
 function formatDate(ms) {
   return new Date(ms).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   })
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function fileCategory(filename) {
+  const ext = filename.split('.').pop().toLowerCase()
+  if (ext === 'md') return 'note'
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image'
+  if (ext === 'pdf') return 'pdf'
+  if (['txt', 'csv', 'json', 'xml', 'html', 'js', 'ts', 'py', 'rb', 'sh'].includes(ext)) return 'text'
+  return 'file'
+}
+
+function FileIcon({ filename }) {
+  const cat = fileCategory(filename)
+  const cls = "w-4 h-4 shrink-0"
+  if (cat === 'note') return (
+    <svg className={`${cls} text-indigo-400`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  )
+  if (cat === 'image') return (
+    <svg className={`${cls} text-green-400`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+    </svg>
+  )
+  if (cat === 'pdf') return (
+    <svg className={`${cls} text-red-400`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  )
+  return (
+    <svg className={`${cls} text-gray-400`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  )
 }
 
 export default function ProjectContext() {
@@ -15,22 +55,57 @@ export default function ProjectContext() {
   const { handle, projects } = useWorkspace()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef(null)
+  const dragCounter = useRef(0)
 
   const project = projects.find((p) => p.slug === slug)
 
   useEffect(() => {
     if (!handle || !slug) return
-    listContextFiles(handle, slug).then((f) => {
-      setFiles(f)
-      setLoading(false)
-    })
+    listContextFiles(handle, slug).then((f) => { setFiles(f); setLoading(false) })
   }, [handle, slug])
+
+  async function handleUpload(fileList) {
+    if (!fileList?.length) return
+    setUploading(true)
+    const uploaded = []
+    for (const file of fileList) {
+      const result = await uploadContextFile(handle, slug, file)
+      uploaded.push(result)
+    }
+    setFiles((prev) => {
+      const names = new Set(uploaded.map((f) => f.filename))
+      return [...prev.filter((f) => !names.has(f.filename)), ...uploaded]
+        .sort((a, b) => b.lastModified - a.lastModified)
+    })
+    setUploading(false)
+  }
 
   async function handleDelete(filename) {
     await deleteContextFile(handle, slug, filename)
     setFiles((prev) => prev.filter((f) => f.filename !== filename))
     setConfirmDelete(null)
+  }
+
+  function onDragEnter(e) {
+    e.preventDefault()
+    dragCounter.current++
+    if (e.dataTransfer.items?.length) setIsDragging(true)
+  }
+  function onDragLeave(e) {
+    e.preventDefault()
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+  function onDragOver(e) { e.preventDefault() }
+  function onDrop(e) {
+    e.preventDefault()
+    dragCounter.current = 0
+    setIsDragging(false)
+    handleUpload(e.dataTransfer.files)
   }
 
   if (!project) {
@@ -43,7 +118,24 @@ export default function ProjectContext() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-12 px-6">
+    <div
+      className="max-w-2xl mx-auto py-12 px-6 relative"
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
+      {/* Drag overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-indigo-50/90 border-4 border-dashed border-indigo-400 pointer-events-none">
+          <div className="text-center">
+            <svg className="w-12 h-12 text-indigo-400 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <p className="text-lg font-semibold text-indigo-600">Drop files to upload</p>
+          </div>
+        </div>
+      )}
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-6 flex-wrap">
@@ -59,71 +151,69 @@ export default function ProjectContext() {
           <h1 className="text-2xl font-bold text-gray-900">Context</h1>
           <p className="text-sm text-gray-400 mt-0.5">Notes and reference material for this project</p>
         </div>
-        <button
-          onClick={() => navigate(`/project/${slug}/context/new`)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          New Note
-        </button>
+        <div className="flex items-center gap-2">
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            {uploading ? 'Uploading…' : 'Upload'}
+          </button>
+          <button
+            onClick={() => navigate(`/project/${slug}/context/new`)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Note
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <p className="text-sm text-gray-400">Loading…</p>
       ) : files.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 py-14 text-center">
+        <div className="rounded-lg border-2 border-dashed border-gray-200 py-16 text-center">
           <svg className="w-8 h-8 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
-          <p className="text-sm text-gray-400">No context files yet.</p>
-          <p className="text-xs text-gray-400 mt-1">Add meeting notes, feature ideas, or any reference material.</p>
-          <button
-            onClick={() => navigate(`/project/${slug}/context/new`)}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-          >
-            Create your first note
-          </button>
+          <p className="text-sm font-medium text-gray-500">Drop files here or use the buttons above</p>
+          <p className="text-xs text-gray-400 mt-1">Upload any file type — PDFs, images, notes, transcripts</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {files.map(({ filename, lastModified }) => {
-            const title = filename.replace(/\.md$/, '').replace(/-/g, ' ')
+          {files.map(({ filename, lastModified, size }) => {
             const isConfirming = confirmDelete === filename
+            const displayName = filename
             return (
               <div
                 key={filename}
                 className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all"
               >
                 <button
-                  onClick={() => navigate(`/project/${slug}/context/${filename}`)}
+                  onClick={() => navigate(`/project/${slug}/context/${encodeURIComponent(filename)}`)}
                   className="flex items-center gap-3 flex-1 min-w-0 text-left"
                 >
-                  <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
+                  <FileIcon filename={filename} />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 capitalize truncate">{title}</p>
-                    <p className="text-xs text-gray-400">{formatDate(lastModified)}</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">{displayName}</p>
+                    <p className="text-xs text-gray-400">
+                      {formatDate(lastModified)}
+                      {size != null && <span className="ml-2">{formatSize(size)}</span>}
+                    </p>
                   </div>
                 </button>
 
                 {isConfirming ? (
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-gray-500">Delete?</span>
-                    <button
-                      onClick={() => handleDelete(filename)}
-                      className="text-xs font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                    >
-                      Yes
-                    </button>
-                    <button
-                      onClick={() => setConfirmDelete(null)}
-                      className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                    <button onClick={() => handleDelete(filename)} className="text-xs font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors">Yes</button>
+                    <button onClick={() => setConfirmDelete(null)} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100 transition-colors">Cancel</button>
                   </div>
                 ) : (
                   <button

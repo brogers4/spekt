@@ -131,13 +131,33 @@ export async function listContextFiles(workspaceHandle, projectSlug) {
     const contextDir = await getContextDir(workspaceHandle, projectSlug)
     const files = []
     for await (const [name, handle] of contextDir.entries()) {
-      if (handle.kind !== 'file' || !name.endsWith('.md')) continue
+      if (handle.kind !== 'file') continue
       const file = await handle.getFile()
-      files.push({ filename: name, lastModified: file.lastModified })
+      files.push({ filename: name, lastModified: file.lastModified, size: file.size })
     }
     return files.sort((a, b) => b.lastModified - a.lastModified)
   } catch {
     return []
+  }
+}
+
+export async function uploadContextFile(workspaceHandle, projectSlug, file) {
+  const contextDir = await getContextDir(workspaceHandle, projectSlug, { create: true })
+  const fileHandle = await contextDir.getFileHandle(file.name, { create: true })
+  const writable = await fileHandle.createWritable()
+  await writable.write(file)
+  await writable.close()
+  return { filename: file.name, lastModified: file.lastModified, size: file.size }
+}
+
+export async function readContextFileAsObjectUrl(workspaceHandle, projectSlug, filename) {
+  try {
+    const contextDir = await getContextDir(workspaceHandle, projectSlug)
+    const fileHandle = await contextDir.getFileHandle(filename)
+    const file = await fileHandle.getFile()
+    return { url: URL.createObjectURL(file), mimeType: file.type }
+  } catch {
+    return null
   }
 }
 
