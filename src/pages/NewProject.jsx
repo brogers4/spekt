@@ -14,7 +14,7 @@ export default function NewProject() {
 
   useEffect(() => {
     setTitle('New project')
-    setCrumbs([{ label: 'All projects', href: '/' }])
+    setCrumbs([{ label: 'All projects', href: '/projects' }])
   }, [])
 
   const handleChange = (e) => {

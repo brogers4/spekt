@@ -34,9 +34,9 @@ export default function TopBar() {
           </span>
         ))}
         {title && (
-          <h1 className="text-[17px] font-semibold text-fg-1 tracking-[-0.01em] truncate font-display m-0">
+          <span className="text-[13px] font-medium text-fg-1 truncate">
             {title}
-          </h1>
+          </span>
         )}
       </div>
     </header>

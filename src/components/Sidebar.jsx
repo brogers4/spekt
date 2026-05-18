@@ -131,7 +131,8 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className={['flex-1 overflow-y-auto pt-2 pb-2', collapsed ? 'px-2' : 'px-3'].join(' ')}>
         <div className="flex flex-col gap-0.5">
-          <NavItem to="/" end icon={iconHome} label="All projects" count={projects.length || undefined} collapsed={collapsed} />
+          <NavItem to="/" end icon={iconHome} label="Home" collapsed={collapsed} />
+          <NavItem to="/projects" icon={iconFolder} label="All projects" count={projects.length || undefined} collapsed={collapsed} />
         </div>
 
         {!collapsed && recent.length > 0 && (
@@ -162,13 +163,10 @@ export default function Sidebar() {
       <div className={['border-t border-border shrink-0 pt-2 pb-3', collapsed ? 'px-2' : 'px-3'].join(' ')}>
         <NavItem to="/settings" icon={iconSettings} label="Settings" collapsed={collapsed} />
 
-        {!collapsed && (
-          <div className="mt-3 px-2.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-            <span className="text-xs text-fg-3 font-mono truncate">projects/</span>
-            {showWarning && (
-              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-danger shrink-0" title="Claude API key not set" />
-            )}
+        {!collapsed && showWarning && (
+          <div className="mt-2 px-2.5 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0" title="Claude API key not set" />
+            <span className="text-xs text-fg-3">API key not set</span>
           </div>
         )}
       </div>
@@ -222,7 +220,8 @@ export default function Sidebar() {
           </div>
           <nav className="flex-1 overflow-y-auto pt-2 pb-2 px-3">
             <div className="flex flex-col gap-0.5">
-              <NavItem to="/" end icon={iconHome} label="All projects" count={projects.length || undefined} collapsed={false} />
+              <NavItem to="/" end icon={iconHome} label="Home" collapsed={false} />
+              <NavItem to="/projects" icon={iconFolder} label="All projects" count={projects.length || undefined} collapsed={false} />
             </div>
             {recent.length > 0 && (
               <>
@@ -247,10 +246,6 @@ export default function Sidebar() {
           </nav>
           <div className="border-t border-border shrink-0 pt-2 pb-3 px-3">
             <NavItem to="/settings" icon={iconSettings} label="Settings" collapsed={false} />
-            <div className="mt-3 px-2.5 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-              <span className="text-xs text-fg-3 font-mono truncate">projects/</span>
-            </div>
           </div>
         </aside>
       </div>

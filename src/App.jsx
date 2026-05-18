@@ -2,7 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import { LayoutProvider } from './context/LayoutContext'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
-import Home from './pages/Home'
+import Landing from './pages/Landing'
+import AllProjects from './pages/AllProjects'
 import NewProject from './pages/NewProject'
 import Project from './pages/Project'
 import ProjectSettings from './pages/ProjectSettings'
@@ -20,7 +21,8 @@ export default function App() {
           <TopBar />
           <main className="flex-1 overflow-y-auto">
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/projects" element={<AllProjects />} />
               <Route path="/new-project" element={<NewProject />} />
               <Route path="/project/:slug" element={<Project />} />
               <Route path="/project/:slug/settings" element={<ProjectSettings />} />

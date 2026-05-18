@@ -38,7 +38,7 @@ export default function Project() {
   useEffect(() => {
     if (!project) return
     setTitle(project.name)
-    setCrumbs([{ label: 'All projects', href: '/' }])
+    setCrumbs([{ label: 'All projects', href: '/projects' }])
   }, [project?.name])
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({

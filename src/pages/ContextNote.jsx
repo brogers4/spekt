@@ -81,7 +81,7 @@ export default function ContextNote() {
     if (!project) return
     setPageTitle(displayTitle)
     setCrumbs([
-      { label: 'All projects', href: '/' },
+      { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
       { label: 'Context', href: `/project/${slug}/context` },
     ])

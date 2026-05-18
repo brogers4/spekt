@@ -37,7 +37,7 @@ export default function ArtifactView() {
     if (!project) return
     setTitle(label)
     setCrumbs([
-      { label: 'All projects', href: '/' },
+      { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
   }, [project?.name, slug, label])

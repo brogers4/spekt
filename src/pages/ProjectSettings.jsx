@@ -16,7 +16,7 @@ export default function ProjectSettings() {
     if (!project) return
     setTitle('Project settings')
     setCrumbs([
-      { label: 'All projects', href: '/' },
+      { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
   }, [project?.name, slug])

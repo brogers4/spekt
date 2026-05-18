@@ -69,7 +69,7 @@ export default function ProjectContext() {
     if (!project) return
     setTitle('Context')
     setCrumbs([
-      { label: 'All projects', href: '/' },
+      { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
   }, [project?.name, slug])
