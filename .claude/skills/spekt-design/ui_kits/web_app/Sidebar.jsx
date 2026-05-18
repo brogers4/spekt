@@ -37,7 +37,7 @@ const Sidebar = ({ route, onNavigate }) => (
     }}>
       <img src="../../assets/logo-mark.svg" width="22" height="22" alt="" />
       <div style={{ flex: 1, textAlign: 'left' }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}>po agent</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}>spekt<span style={{ color: 'var(--accent-coral)' }}>.</span></div>
         <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>Acme · Platform</div>
       </div>
       <Icon name="chevronDown" size={14} style={{ color: 'var(--fg-3)' }} />

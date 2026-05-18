@@ -1,8 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-const KEY = 'po-agent:claude-api-key'
+// One-time migration from old 'po-agent:' localStorage prefix to 'spekt:'
+;['claude-api-key', 'cli-mode'].forEach(k => {
+  const val = localStorage.getItem(`po-agent:${k}`)
+  if (val) { localStorage.setItem(`spekt:${k}`, val); localStorage.removeItem(`po-agent:${k}`) }
+})
+
+const KEY = 'spekt:claude-api-key'
 const KEY_PATTERN = /^sk-ant-/
-const CLI_MODE_KEY = 'po-agent:cli-mode'
+const CLI_MODE_KEY = 'spekt:cli-mode'
 
 export function getCliMode() {
   return localStorage.getItem(CLI_MODE_KEY) === 'true'

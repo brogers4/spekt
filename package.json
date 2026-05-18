@@ -1,5 +1,5 @@
 {
-  "name": "po-agent",
+  "name": "spekt",
   "version": "1.0.0",
   "description": "AI-assisted Product Owner artifact generation tool",
   "type": "module",

@@ -1,4 +1,4 @@
-# po-agent
+# spekt
 
 ## Project overview
 

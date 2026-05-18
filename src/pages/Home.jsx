@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLayout } from '../context/LayoutContext'
-import logoWordmark from '../assets/logo-wordmark.svg'
+import logoWordmark from '../assets/spekt-lockup.png'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ export default function Home() {
 
   return (
     <div className="max-w-[720px] mx-auto py-10 px-8">
-      <img src={logoWordmark} alt="PO Agent" className="h-16 w-auto" />
+      <img src={logoWordmark} alt="spekt." className="h-32 w-auto" />
       <p className="mt-3 text-lg text-fg-3">
         Answer a few questions about your product and get a full suite of artifacts
         generated and stored locally on your machine.
@@ -37,7 +37,7 @@ export default function Home() {
         <div className="min-w-0">
           <p className="text-sm font-medium text-fg-2">Projects stored at</p>
           <p className="text-xs text-fg-3 font-mono truncate mt-0.5">
-            {projectsRoot ?? 'po-agent/projects/'}
+            {projectsRoot ?? 'spekt/projects/'}
           </p>
         </div>
       </div>

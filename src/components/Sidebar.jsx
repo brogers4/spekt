@@ -2,8 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLayout } from '../context/LayoutContext'
 import { hasApiKey, getCliMode } from '../lib/claude'
-import logoMark from '../assets/logo-mark.svg'
-import logoWordmark from '../assets/logo-wordmark.svg'
+import logoMark from '../assets/spekt-icon.png'
+import logoWordmark from '../assets/spekt-wordmark.png'
 
 function NavItem({ to, end, icon, label, count, collapsed }) {
   return (
@@ -97,10 +97,10 @@ export default function Sidebar() {
       {/* Header — wordmark + collapse toggle */}
       <div className={['flex items-center border-b border-border h-14 shrink-0', collapsed ? 'justify-center px-3' : 'px-4 gap-2.5'].join(' ')}>
         {collapsed ? (
-          <img src={logoMark} alt="PO Agent" className="w-6 h-6 shrink-0" />
+          <img src={logoMark} alt="spekt." className="w-6 h-6 shrink-0" />
         ) : (
           <div className="flex-1 min-w-0">
-            <img src={logoWordmark} alt="PO Agent" className="h-5 w-auto" />
+            <img src={logoWordmark} alt="spekt." className="h-5 w-auto" />
             <div className="text-[11px] text-fg-3 mt-1">Artifact generator</div>
           </div>
         )}
@@ -201,7 +201,7 @@ export default function Sidebar() {
         <aside className="bg-surface-1 border-r border-border flex flex-col h-full w-60">
           <div className="flex items-center gap-2.5 px-4 border-b border-border h-14 shrink-0">
             <div className="flex-1 min-w-0">
-              <img src={logoWordmark} alt="PO Agent" className="h-5 w-auto" />
+              <img src={logoWordmark} alt="spekt." className="h-5 w-auto" />
               <div className="text-[11px] text-fg-3 mt-1">Artifact generator</div>
             </div>
             <button

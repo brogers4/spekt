@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { hasApiKey, identifyPrfaqUnknowns, generatePrfaq } from '../lib/claude'
 import { readArtifact, writeArtifact, listContextFiles, readContextFile } from '../lib/fs'
-import prfaqTemplate from '../templates/prfaq.md?raw'
+import prfaqTemplate from '../templates/prfaq.template.md?raw'
 
 const PHASES = { preflight: 0, gathering: 1, questioning: 2, generating: 3 }
+const ARTIFACT_LABELS = { prfaq: 'PRFAQ', prd: 'PRD', epics: 'Epics', 'user-stories': 'User stories', backlog: 'Backlog' }
 
 export default function GenerateArtifactModal({ slug, project, artifactKey, onClose }) {
   const navigate = useNavigate()
@@ -16,7 +17,10 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
   const abortRef = useRef(null)
 
   const apiKeyReady = hasApiKey()
-  const label = artifactKey === 'prfaq.md' ? 'PRFAQ' : artifactKey
+  const type = artifactKey.startsWith(`${slug}-`)
+    ? artifactKey.slice(slug.length + 1).replace(/\.md$/, '')
+    : artifactKey.replace(/\.md$/, '')
+  const label = ARTIFACT_LABELS[type] ?? type
 
   useEffect(() => {
     listContextFiles(slug).then((f) => setContextCount(f.length))

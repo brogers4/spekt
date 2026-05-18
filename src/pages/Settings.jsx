@@ -74,7 +74,7 @@ export default function Settings() {
             <div>
               <p className="text-sm font-medium text-fg-1">Claude Code / Pro</p>
               <p className="text-xs text-fg-3 mt-0.5">
-                Use the Claude Code CLI with your existing Claude Pro subscription. PO Agent will give you the exact commands to run — no API key needed.
+                Use the Claude Code CLI with your existing Claude Pro subscription. spekt. will give you the exact commands to run — no API key needed.
               </p>
             </div>
           </label>
@@ -119,7 +119,7 @@ export default function Settings() {
               </div>
               {error && <p className="mt-1.5 text-xs text-danger">{error}</p>}
               <p className="mt-1.5 text-xs text-fg-3">
-                Your key is stored locally in your browser and never sent to PO Agent servers.{' '}
+                Your key is stored locally in your browser and never sent to spekt. servers.{' '}
                 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="text-coral hover:underline">
                   Get a key →
                 </a>

@@ -7,11 +7,18 @@ import { readArtifact, writeArtifact } from '../lib/fs'
 import { useMarkdownEditor } from '../hooks/useMarkdownEditor'
 
 const ARTIFACT_LABELS = {
-  'prfaq.md': 'PRFAQ',
-  'prd.md': 'PRD',
-  'epics.md': 'Epics',
-  'user-stories.md': 'User stories',
-  'backlog.md': 'Backlog',
+  'prfaq': 'PRFAQ',
+  'prd': 'PRD',
+  'epics': 'Epics',
+  'user-stories': 'User stories',
+  'backlog': 'Backlog',
+}
+
+function artifactLabel(slug, filename) {
+  const type = filename.startsWith(`${slug}-`)
+    ? filename.slice(slug.length + 1).replace(/\.md$/, '')
+    : filename.replace(/\.md$/, '')
+  return ARTIFACT_LABELS[type] ?? type
 }
 
 export default function ArtifactView() {
@@ -23,7 +30,7 @@ export default function ArtifactView() {
 
   const project = projects.find((p) => p.slug === slug)
   const filename = key
-  const label = ARTIFACT_LABELS[filename] ?? filename
+  const label = artifactLabel(slug, filename)
   const { setTitle, setCrumbs } = useLayout()
 
   useEffect(() => {

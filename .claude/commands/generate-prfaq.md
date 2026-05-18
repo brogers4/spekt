@@ -9,8 +9,10 @@ $ARGUMENTS
 
 **Locate the project root and template:**
 
-1. If `projects/$ARGUMENTS` exists as a directory, use it as the project root and load the template from `src/templates/prfaq.md` (you are running from the PO Agent root).
-2. Otherwise, use `.` as the project root and load the template from `../../src/templates/prfaq.md` (you are already inside the project folder).
+1. If `projects/$ARGUMENTS` exists as a directory, use it as the project root and load the template from `src/templates/prfaq.template.md` (you are running from the spekt root).
+2. Otherwise, use `.` as the project root and load the template from `../../src/templates/prfaq.template.md` (you are already inside the project folder).
+
+The project slug is `$ARGUMENTS` (or the folder name when running from inside the project).
 
 Follow the full generate-prfaq skill instructions:
 
@@ -42,4 +44,4 @@ Follow the full generate-prfaq skill instructions:
 
 4. **Save to memory** any facts provided: company name, target customer segment, spokesperson, launch date, website URL, dateline city/outlet.
 
-5. **After presenting the output**, ask if the user wants to save it to `prfaq.md`, request any revisions, and prompt for any new FAQ questions to add.
+5. **After presenting the output**, ask if the user wants to save it to `{slug}-prfaq.md` (e.g. `spekt-prfaq.md`), request any revisions, and prompt for any new FAQ questions to add.

@@ -9,13 +9,17 @@ import GenerateArtifactModal from '../components/GenerateArtifactModal'
 import CLIInstructionsModal from '../components/CLIInstructionsModal'
 import { getCliMode } from '../lib/claude'
 
-const ARTIFACTS = [
-  { key: 'prfaq.md', label: 'PRFAQ', description: 'Press Release & FAQ', hasTemplate: true },
-  { key: 'prd.md', label: 'PRD', description: 'Product Requirements Document', hasTemplate: false },
-  { key: 'epics.md', label: 'Epics', description: 'High-level feature groupings', hasTemplate: false },
-  { key: 'user-stories.md', label: 'User stories', description: 'Granular development tasks', hasTemplate: false },
-  { key: 'backlog.md', label: 'Backlog', description: 'Prioritized work queue', hasTemplate: false },
+const ARTIFACT_TYPES = [
+  { type: 'prfaq', label: 'PRFAQ', description: 'Press Release & FAQ', hasTemplate: true },
+  { type: 'prd', label: 'PRD', description: 'Product Requirements Document', hasTemplate: false },
+  { type: 'epics', label: 'Epics', description: 'High-level feature groupings', hasTemplate: false },
+  { type: 'user-stories', label: 'User stories', description: 'Granular development tasks', hasTemplate: false },
+  { type: 'backlog', label: 'Backlog', description: 'Prioritized work queue', hasTemplate: false },
 ]
+
+function artifactFilename(slug, type) {
+  return `${slug}-${type}.md`
+}
 
 export default function Project() {
   const { slug } = useParams()
@@ -50,7 +54,8 @@ export default function Project() {
     getFileLastModified(slug, 'README.md').then(setLastModified)
     listContextFiles(slug).then((files) => setContextCount(files.length))
     Promise.all(
-      ARTIFACTS.map(async ({ key }) => {
+      ARTIFACT_TYPES.map(async ({ type }) => {
+        const key = artifactFilename(slug, type)
         const content = await readArtifact(slug, key)
         return [key, content !== null]
       })
@@ -196,7 +201,8 @@ export default function Project() {
         Artifacts
       </h2>
       <div className="mt-3 space-y-2">
-        {ARTIFACTS.map(({ key, label, description, hasTemplate }) => {
+        {ARTIFACT_TYPES.map(({ type, label, description, hasTemplate }) => {
+          const key = artifactFilename(slug, type)
           const generated = artifactStatus[key]
           const clickable = generated || hasTemplate
 
@@ -267,7 +273,8 @@ export default function Project() {
             onClose={() => {
               setGeneratingArtifact(null)
               Promise.all(
-                ARTIFACTS.map(async ({ key }) => {
+                ARTIFACT_TYPES.map(async ({ type }) => {
+                  const key = artifactFilename(slug, type)
                   const content = await readArtifact(slug, key)
                   return [key, content !== null]
                 })

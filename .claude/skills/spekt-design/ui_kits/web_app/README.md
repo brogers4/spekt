@@ -1,6 +1,6 @@
-# PO Agent · Web App UI Kit
+# spekt. · Web App UI Kit
 
-A high-fidelity, clickable recreation of the PO Agent web product. Open `index.html` to interact with it.
+A high-fidelity, clickable recreation of the spekt. web product. Open `index.html` to interact with it.
 
 ## What's in here
 

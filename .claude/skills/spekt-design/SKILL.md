@@ -1,6 +1,6 @@
 ---
-name: po-agent-design
-description: Use this skill to generate well-branded interfaces and assets for PO Agent, either for production or throwaway prototypes/mocks/etc. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping.
+name: spekt-design
+description: Use this skill to generate well-branded interfaces and assets for spekt., either for production or throwaway prototypes/mocks/etc. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping.
 user-invocable: true
 ---
 
@@ -9,7 +9,7 @@ Read the `README.md` file within this skill, and explore the other available fil
 - `colors_and_type.css` — the token layer. Import this at the top of any HTML/CSS artifact and you get the full color, type, spacing, radius, shadow and motion system as CSS variables.
 - `assets/` — the logo (mark, wordmark, light/dark mono variants).
 - `preview/` — example HTML snippets demonstrating type, colors, spacing, components, and brand voice. Read these to understand how the tokens compose.
-- `ui_kits/web_app/` — a complete clickable React recreation of the PO Agent product. `primitives.jsx` has Button / Input / Tag / Chip / Avatar / Card and friends; `Sidebar.jsx`, `TopBar.jsx`, `Dashboard.jsx`, `Composer.jsx`, `ArtifactView.jsx` are the screens. Copy components out — don't reference back into the skill.
+- `ui_kits/web_app/` — a complete clickable React recreation of the spekt. product. `primitives.jsx` has Button / Input / Tag / Chip / Avatar / Card and friends; `Sidebar.jsx`, `TopBar.jsx`, `Dashboard.jsx`, `Composer.jsx`, `ArtifactView.jsx` are the screens. Copy components out — don't reference back into the skill.
 - `fonts/` — points at Google Fonts (Bricolage Grotesque + Geist + Geist Mono). No local font files yet.
 
 ### When making a visual artifact (slides, mocks, throwaway prototypes)
@@ -25,7 +25,7 @@ You can read the rules in `README.md` and replicate the tokens in your real desi
 
 ### When invoked with no other guidance
 
-Ask the user what they want to build or design, ask a few questions (output format, audience, screen vs. slide, light vs. dark — though PO Agent is dark-first), then act as an expert designer who outputs HTML artifacts *or* production code depending on the need.
+Ask the user what they want to build or design, ask a few questions (output format, audience, screen vs. slide, light vs. dark — though spekt. is dark-first), then act as an expert designer who outputs HTML artifacts *or* production code depending on the need.
 
 ### Non-negotiables
 

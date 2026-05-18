@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { readArtifact } from '../lib/fs'
 
+const ARTIFACT_LABELS = { prfaq: 'PRFAQ', prd: 'PRD', epics: 'Epics', 'user-stories': 'User stories', backlog: 'Backlog' }
+
 export default function CLIInstructionsModal({ slug, project, artifactKey, onClose, onRefresh }) {
-  const label = artifactKey === 'prfaq.md' ? 'PRFAQ' : artifactKey
-  const cmd = `/generate-${artifactKey.replace('.md', '')} ${slug}`
+  const type = artifactKey.startsWith(`${slug}-`)
+    ? artifactKey.slice(slug.length + 1).replace(/\.md$/, '')
+    : artifactKey.replace(/\.md$/, '')
+  const label = ARTIFACT_LABELS[type] ?? type
+  const cmd = `/generate-${type} ${slug}`
 
   async function refresh() {
     const content = await readArtifact(slug, artifactKey)

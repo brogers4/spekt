@@ -1,25 +1,23 @@
-# PO Agent
+![spekt.](src/assets/spekt-lockup.png)
 
 > A local-first artifact generator for product owners — turn context into PRDs, PRFAQs, Epics, User Stories, and Backlogs, all stored as editable markdown files on your machine.
 
 ## Overview
 
-PO Agent is a browser-based dashboard that helps product owners generate and manage the full suite of product artifacts. Everything is stored locally as plain markdown files using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) — no backend, no cloud sync, no accounts.
+spekt. is a browser-based dashboard that helps product owners generate and manage the full suite of product artifacts. Projects are stored inside the `spekt/projects/` directory as plain markdown files — no backend, no cloud sync, no accounts. A lightweight Node.js file API runs inside the Vite dev server to read and write files on your behalf.
 
 **Key features:**
-- Create and manage multiple projects, each backed by a folder on your machine
+- Create and manage multiple projects, each stored under `projects/` in the app directory
 - Add context to each project — meeting notes, transcripts, feature ideas, PDFs, images — via a built-in markdown editor or drag-and-drop upload
-- Generate artifacts (PRD, PRFAQ, Epics, User Stories, Backlog) from your context using Claude AI *(coming soon)*
+- Generate artifacts (PRFAQ, and more) from your context using the Claude API or Claude Code CLI
 - All files are plain markdown, fully editable in VS Code, iA Writer, or any text editor
-
-> **Browser requirement:** Chrome or Edge only. The File System Access API is not supported in Firefox or Safari.
 
 ## Getting started
 
 ```bash
 # Clone the repo
-git clone https://github.com/brogers4/po-agent.git
-cd po-agent
+git clone https://github.com/brogers4/spekt.git
+cd spekt
 
 # Install dependencies
 npm install
@@ -28,45 +26,49 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173) in Chrome or Edge.
+Open [http://localhost:5173](http://localhost:5173) in any modern browser. The `projects/` directory is created automatically on first launch.
 
-On first launch, click **Choose Folder** to pick a workspace directory. PO Agent will store all project files there as editable markdown.
+Set your Claude API key in **Settings** to enable artifact generation, or use CLI mode to generate via [Claude Code](https://claude.ai/code).
 
 ## Project structure
 
 ```
-<workspace>/
-  <project-slug>/
-    README.md          ← project name, description, created date
-    context/           ← notes and reference files you provide
-      meeting-notes.md
-      spec.pdf
-      wireframe.png
-    prd.md             ← generated artifacts (coming soon)
-    prfaq.md
-    epics.md
-    user-stories.md
-    backlog.md
+spekt/
+  projects/                         ← gitignored; all user data lives here
+    <project-slug>/
+      README.md                     ← project name, description, created date
+      context/                      ← notes and reference files you provide
+        meeting-notes.md
+        spec.pdf
+        wireframe.png
+      <project-slug>-prfaq.md       ← generated artifacts
+      <project-slug>-prd.md
 ```
 
 ## Tech stack
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| [Vite](https://vitejs.dev) | 6 | Build tool and dev server |
+| [Vite](https://vitejs.dev) | 8 | Build tool and dev server (also hosts the file API) |
 | [React](https://react.dev) | 19 | UI library |
 | [React Router](https://reactrouter.com) | 7 | Client-side routing |
 | [Tailwind CSS](https://tailwindcss.com) | 4 | Styling |
 | [react-markdown](https://github.com/remarkjs/react-markdown) | — | Markdown rendering |
-| [idb](https://github.com/jakearchibald/idb) | — | IndexedDB wrapper for persisting workspace handle |
+| [@anthropic-ai/sdk](https://github.com/anthropic/anthropic-sdk-node) | — | Claude API client |
+| [busboy](https://github.com/mscdex/busboy) | — | Multipart file upload parsing in the dev server |
+| [@fontsource-variable/bricolage-grotesque](https://fontsource.org) | — | Display font (self-hosted) |
+| [@fontsource/geist](https://fontsource.org) | — | Body font (self-hosted) |
+| [@fontsource/geist-mono](https://fontsource.org) | — | Mono font (self-hosted) |
 
 ## Development
 
 ```bash
 npm run dev      # start dev server at localhost:5173
-npm run build    # production build
+npm run build    # production build (static only — file API requires the dev server)
 npm run preview  # preview production build locally
 ```
+
+> **Note:** The `/api/*` file endpoints only exist in `vite dev`. The production build is a static bundle with no file API.
 
 ## License
 

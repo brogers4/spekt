@@ -1,10 +1,10 @@
-# PO Agent — Design System
+# spekt. — Design System
 
 > A calm, dark-first interface system for product owners who want AI to do the boring parts of their job without learning CLIs, prompts, or "agentic patterns."
 
-## What is PO Agent?
+## What is spekt.?
 
-PO Agent is an **open-source** productivity tool for **medium-tech-savvy Product Owners**. The core loop is:
+spekt. is an **open-source** productivity tool for **medium-tech-savvy Product Owners**. The core loop is:
 
 1. **Drop in raw context** — meeting transcripts, scratch notes, half-finished thoughts, customer quotes, linked docs. No structure required.
 2. **The agent reads it all** and generates a **linked artifact tree**:
@@ -38,7 +38,7 @@ This design system was built **from scratch** for a greenfield, open-source prod
 | `fonts/` | Font references (Google Fonts links; no local files yet) |
 | `assets/` | Logos, brand mark, generic illustrations |
 | `preview/` | Small HTML cards that render in the Design System tab |
-| `ui_kits/web_app/` | High-fidelity React recreation of the PO Agent web app |
+| `ui_kits/web_app/` | High-fidelity React recreation of the spekt. web app |
 
 ---
 
@@ -92,7 +92,7 @@ A 4px base grid. Layouts are generous: minimum gutter is 24px, content max-width
 - Dividers between list items inside a card use `--border-1`. Outside cards (between sections), dividers are replaced by **whitespace**, not lines.
 
 ### Shadows & elevation
-On dark UI, dark drop shadows have nothing to land on, so PO Agent elevation is carried primarily by a **light rim** — a 1px outer ring plus a 1px inset highlight at the top edge, both in rgba-white. The rim brightens as elevation rises; a soft dark drop layers underneath as a secondary cue.
+On dark UI, dark drop shadows have nothing to land on, so spekt. elevation is carried primarily by a **light rim** — a 1px outer ring plus a 1px inset highlight at the top edge, both in rgba-white. The rim brightens as elevation rises; a soft dark drop layers underneath as a secondary cue.
 - `--shadow-1` resting card: rim 4% / inset 5% / drop `0 1px 2px rgba(0,0,0,0.30)`
 - `--shadow-2` raised: rim 7% / inset 8% / drop `0 6px 16px -4px rgba(0,0,0,0.50)`
 - `--shadow-3` popover: rim 10% / inset 11% / drop `0 16px 32px -8px rgba(0,0,0,0.55)`
@@ -160,7 +160,7 @@ The product talks like a **competent, calm colleague who's been doing this for a
 
 ### Casing
 - **Sentence case everywhere.** Buttons, menu items, headers, modal titles. "New artifact", not "New Artifact".
-- Product name is **PO Agent** (capital P, capital O, capital A). The artifact type names (PRD, BRD, RFC) stay in caps.
+- Product name is **spekt.** (lowercase "spekt" with coral period). The artifact type names (PRD, BRD, RFC) stay in caps.
 - Acronyms inside body text are in caps without periods: "PRD", not "P.R.D."
 
 ### Person
@@ -192,7 +192,7 @@ The product talks like a **competent, calm colleague who's been doing this for a
 ## ICONOGRAPHY
 
 ### System
-**Lucide** (CDN, `lucide@latest` ESM) is the canonical icon set for PO Agent.
+**Lucide** (CDN, `lucide@latest` ESM) is the canonical icon set for spekt.
 
 > **Flag — substitution.** Since no proprietary icon set was provided with this brief, Lucide was chosen as the closest match to the brand: 1.5px stroke, rounded line caps, 24×24 grid, slightly humanist geometry — it harmonizes with Bricolage Grotesque's rounded terminals. Swap any icon by name; if you later supply a custom set, replace `assets/icons/` and the `<Icon>` component points at it.
 
@@ -204,9 +204,9 @@ The product talks like a **competent, calm colleague who's been doing this for a
 - **Alignment:** Inline icons sit on the baseline. `vertical-align: -0.125em` is the default class.
 
 ### Logo & mark
-The PO Agent mark is a custom hand-built SVG (the *only* hand-built SVG in the system), found at:
+The spekt. mark is a custom hand-built SVG (the *only* hand-built SVG in the system), found at:
 - `assets/logo-mark.svg` — the square mark, 32×32 viewBox
-- `assets/logo-wordmark.svg` — mark + "po agent" lowercase wordmark
+- `assets/logo-wordmark.svg` — mark + "spekt." wordmark
 - `assets/logo-mark-light.svg` — light-on-dark version
 - `assets/logo-mark-dark.svg` — dark-on-light version (for export)
 
