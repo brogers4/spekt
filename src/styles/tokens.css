@@ -1,0 +1,117 @@
+/* ============================================================================
+ * PO Agent — Design Tokens (source of truth)
+ * Copied from design-system/po-agent/tokens/colors_and_type.css
+ * Dark-first. Soft surfaces. Quiet accents. Spacious by default.
+ * ========================================================================== */
+
+:root {
+  /* ─── Color · Canvas / surfaces ────────────────────────────────────── */
+  --bg-canvas:        #0F1216;
+  --bg-1:             #14181E;
+  --bg-2:             #181C24;
+  --bg-3:             #1E232C;
+  --bg-4:             #252A35;
+  --bg-inverse:       #ECEEF2;
+
+  /* ─── Color · Foreground / text ────────────────────────────────────── */
+  --fg-1:             #ECEEF2;
+  --fg-2:             #B3B8C3;
+  --fg-3:             #7C8290;
+  --fg-4:             #555B68;
+  --fg-on-accent:     #1A0F0B;
+
+  /* ─── Color · Borders ──────────────────────────────────────────────── */
+  --border-1:         #22272F;
+  --border-2:         #2F3640;
+  --border-3:         #3D4452;
+
+  /* ─── Color · Accents ──────────────────────────────────────────────── */
+  --accent-coral:        #E8927C;
+  --accent-coral-hover:  #DA8067;
+  --accent-coral-press:  #C46F58;
+  --accent-coral-soft:   #2A1C18;
+  --accent-coral-ring:   rgba(232, 146, 124, 0.40);
+
+  --accent-sage:         #8FB9A8;
+  --accent-sage-hover:   #7CA897;
+  --accent-sage-soft:    #1A2522;
+
+  /* ─── Color · Semantic ─────────────────────────────────────────────── */
+  --success:          #7CCFA6;
+  --success-soft:     #18241F;
+  --warning:          #E8C679;
+  --warning-soft:     #2A2317;
+  --danger:           #E08585;
+  --danger-soft:      #2A1818;
+  --info:             #8BB3E8;
+  --info-soft:        #182230;
+
+  /* ─── Typography · Families ────────────────────────────────────────── */
+  --font-display:     'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:        'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:        'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ─── Typography · Scale ───────────────────────────────────────────── */
+  --text-xs:          12px;   --lh-xs:   16px;
+  --text-sm:          13px;   --lh-sm:   18px;
+  --text-base:        14px;   --lh-base: 20px;
+  --text-md:          15px;   --lh-md:   22px;
+  --text-lg:          17px;   --lh-lg:   24px;
+  --text-xl:          20px;   --lh-xl:   28px;
+  --text-2xl:         24px;   --lh-2xl:  32px;
+  --text-3xl:         30px;   --lh-3xl:  38px;
+  --text-4xl:         40px;   --lh-4xl:  48px;
+  --text-5xl:         56px;   --lh-5xl:  62px;
+
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.02em;
+  --tracking-caps:    0.08em;
+
+  /* ─── Spacing (4px base) ───────────────────────────────────────────── */
+  --space-0:          0;
+  --space-1:          4px;
+  --space-2:          8px;
+  --space-3:          12px;
+  --space-4:          16px;
+  --space-5:          20px;
+  --space-6:          24px;
+  --space-7:          32px;
+  --space-8:          40px;
+  --space-9:          48px;
+  --space-10:         64px;
+  --space-11:         80px;
+  --space-12:         96px;
+
+  /* ─── Radii ────────────────────────────────────────────────────────── */
+  --radius-xs:        4px;
+  --radius-sm:        6px;
+  --radius-md:        10px;
+  --radius-lg:        14px;
+  --radius-xl:        20px;
+  --radius-2xl:       28px;
+  --radius-full:      999px;
+
+  /* ─── Shadows (dark-surface: light rim + top-edge inset + soft drop) ─ */
+  --shadow-1: 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 0 rgba(255,255,255,0.05), 0 1px 2px 0 rgba(0,0,0,0.30);
+  --shadow-2: 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 0 rgba(255,255,255,0.08), 0 6px 16px -4px rgba(0,0,0,0.50);
+  --shadow-3: 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 0 rgba(255,255,255,0.11), 0 16px 32px -8px rgba(0,0,0,0.55);
+  --shadow-4: 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 0 rgba(255,255,255,0.14), 0 32px 64px -16px rgba(0,0,0,0.65);
+  --shadow-focus: 0 0 0 3px var(--accent-coral-ring);
+
+  /* ─── Motion ───────────────────────────────────────────────────────── */
+  --ease:             cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in:          cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-out:         cubic-bezier(0, 0.55, 0.45, 1);
+  --dur-fast:         120ms;
+  --dur-base:         180ms;
+  --dur-panel:        260ms;
+  --dur-page:         400ms;
+
+  /* ─── Layout ───────────────────────────────────────────────────────── */
+  --sidebar-w:        240px;
+  --sidebar-w-collapsed: 64px;
+  --topbar-h:         56px;
+  --content-prose:    720px;
+  --content-app:      1200px;
+}

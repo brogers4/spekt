@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .crd { background: var(--bg-2); border: 1px solid var(--border-1); border-radius: 14px; padding: 18px; box-shadow: 0 1px 0 0 rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.02); display: flex; flex-direction: column; gap: 10px; }
+  .crd .top { display: flex; justify-content: space-between; align-items: center; }
+  .crd .tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
+  .crd h4 { margin: 0; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--fg-1); }
+  .crd p { margin: 0; font-size: 13px; color: var(--fg-3); line-height: 1.5; }
+  .crd .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fg-4); display: flex; gap: 8px; align-items: center; }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Artifact card</span>
+  <div class="grid2">
+    <div class="crd">
+      <div class="top">
+        <span class="tag" style="background:#2A1C18;color:#E8927C">PRD</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--fg-3)">PRD-0142</span>
+      </div>
+      <h4>Onboarding · v2 (new-team flow)</h4>
+      <p>Cuts setup from 8 steps to 3 by inferring stack and inviting via Slack handle.</p>
+      <div class="meta"><span>You</span><span>·</span><span>Updated 14m ago</span></div>
+    </div>
+    <div class="crd">
+      <div class="top">
+        <span class="tag" style="background:#1A2522;color:#8FB9A8">BRD</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:11px;padding:2px 8px;border-radius:999px;background:var(--accent-coral-soft);color:var(--accent-coral);border:1px solid #3A2820"><span style="width:5px;height:5px;border-radius:999px;background:#E8927C"></span>Drafting…</span>
+      </div>
+      <h4>Q3 release narrative — enterprise tier</h4>
+      <p>Positioning, business case, and rollout sequence for the SSO + audit-log bundle.</p>
+      <div class="meta"><span>the agent</span><span>·</span><span>Started 38s ago</span></div>
+    </div>
+  </div>
+</div>
+</body></html>

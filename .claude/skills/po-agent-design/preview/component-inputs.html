@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--fg-2); font-family: var(--font-body); }
+  .input { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; padding: 10px 12px; color: var(--fg-1); font-family: var(--font-body); font-size: 14px; transition: border-color 180ms, box-shadow 180ms; outline: none; }
+  .input::placeholder { color: var(--fg-4); }
+  .input:focus, .input.focused { border-color: var(--border-2); box-shadow: 0 0 0 3px var(--accent-coral-ring); }
+  .input.error { border-color: var(--danger); }
+  .help { font-size: 11px; color: var(--fg-3); }
+  .help.err { color: var(--danger); }
+  textarea.input { resize: none; min-height: 64px; font-family: var(--font-body); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Inputs</span>
+  <div class="grid2">
+    <div class="field">
+      <label>Artifact name</label>
+      <input class="input" value="Onboarding · v2 PRD" />
+      <div class="help">Default</div>
+    </div>
+    <div class="field">
+      <label>Jira project</label>
+      <input class="input focused" value="PO-PLATFORM" />
+      <div class="help">Focused</div>
+    </div>
+    <div class="field">
+      <label>Ticket key</label>
+      <input class="input error" value="PO-9999X" />
+      <div class="help err">No project with that key</div>
+    </div>
+    <div class="field">
+      <label>Brief</label>
+      <textarea class="input" placeholder="Paste a brief or describe the problem in your own words…"></textarea>
+    </div>
+  </div>
+</div>
+</body></html>

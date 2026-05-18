@@ -1,6 +1,154 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@import "./styles/tokens.css";
+
+/* ============================================================================
+ * Tailwind v4 theme — maps PO Agent tokens to utility classes
+ * Colors:  bg-canvas, bg-surface-1…4, text-fg-1…4, text-coral, bg-coral, etc.
+ * Fonts:   font-display, font-body, font-mono
+ * Radii:   rounded-xs (4) sm (6) md (10) lg (14) xl (20) 2xl (28) full (999)
+ * Shadows: shadow-1…4, shadow-focus
+ * ========================================================================== */
+
+@theme {
+  /* ── Canvas & surfaces ────────────────────────────────────────────── */
+  --color-canvas:    #0F1216;
+  --color-surface-1: #14181E;
+  --color-surface-2: #181C24;
+  --color-surface-3: #1E232C;
+  --color-surface-4: #252A35;
+
+  /* ── Foreground ───────────────────────────────────────────────────── */
+  --color-fg-1:         #ECEEF2;
+  --color-fg-2:         #B3B8C3;
+  --color-fg-3:         #7C8290;
+  --color-fg-4:         #555B68;
+  --color-fg-on-accent: #1A0F0B;
+
+  /* ── Borders ──────────────────────────────────────────────────────── */
+  --color-border:        #22272F;
+  --color-border-strong: #2F3640;
+
+  /* ── Coral accent ─────────────────────────────────────────────────── */
+  --color-coral:       #E8927C;
+  --color-coral-hover: #DA8067;
+  --color-coral-press: #C46F58;
+  --color-coral-soft:  #2A1C18;
+
+  /* ── Sage accent ──────────────────────────────────────────────────── */
+  --color-sage:      #8FB9A8;
+  --color-sage-hover:#7CA897;
+  --color-sage-soft: #1A2522;
+
+  /* ── Semantic ─────────────────────────────────────────────────────── */
+  --color-success:      #7CCFA6;
+  --color-success-soft: #18241F;
+  --color-warning:      #E8C679;
+  --color-warning-soft: #2A2317;
+  --color-danger:       #E08585;
+  --color-danger-soft:  #2A1818;
+  --color-info:         #8BB3E8;
+  --color-info-soft:    #182230;
+
+  /* ── Fonts ────────────────────────────────────────────────────────── */
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:    'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Radii (overrides Tailwind defaults) ──────────────────────────── */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-full: 999px;
+
+  /* ── Shadows (dark-surface: light rim + top-edge inset + soft drop) ── */
+  --shadow-1:     0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 0 rgba(255,255,255,0.05), 0 1px 2px 0 rgba(0,0,0,0.30);
+  --shadow-2:     0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 0 rgba(255,255,255,0.08), 0 6px 16px -4px rgba(0,0,0,0.50);
+  --shadow-3:     0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 0 rgba(255,255,255,0.11), 0 16px 32px -8px rgba(0,0,0,0.55);
+  --shadow-4:     0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 0 rgba(255,255,255,0.14), 0 32px 64px -16px rgba(0,0,0,0.65);
+  --shadow-focus: 0 0 0 3px rgba(232, 146, 124, 0.40);
+}
+
+/* ============================================================================
+ * Global element styles
+ * ========================================================================== */
+
+html, body {
+  background: var(--bg-canvas);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-4xl);
+  line-height: var(--lh-4xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-3xl);
+  line-height: var(--lh-3xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-2xl);
+  line-height: var(--lh-2xl);
+  color: var(--fg-1);
+}
+h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  line-height: var(--lh-lg);
+  color: var(--fg-1);
+}
+h5 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-md);
+  line-height: var(--lh-md);
+  color: var(--fg-1);
+}
+
+code, kbd, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--fg-2);
+}
+code {
+  background: var(--bg-3);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-1);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-xs);
+}
+
+::selection {
+  background: var(--accent-coral-soft);
+  color: var(--fg-1);
+}
+
 button {
   cursor: pointer;
 }

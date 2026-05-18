@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .voice { background: var(--bg-2); border: 1px solid var(--border-1); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .voice .h { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+  .voice .l { font-family: var(--font-body); font-size: 14px; line-height: 20px; color: var(--fg-1); }
+  .yes .h { color: #8FB9A8; }
+  .no  .h { color: #E08585; }
+  .yes  { border-color: #243532; }
+  .no   { border-color: #3A2020; opacity: 0.95; }
+  .lab { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-4); }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Voice — yes / no</span>
+  <div class="grid2">
+    <div class="voice yes"><div class="h">Yes</div><div class="l">"Drafting acceptance criteria…"</div><div class="lab">Loading state</div></div>
+    <div class="voice no"><div class="h">No</div><div class="l">"Hang tight — the AI is working its magic!"</div><div class="lab">Loading state</div></div>
+    <div class="voice yes"><div class="h">Yes</div><div class="l">"Saved to your workspace."</div><div class="lab">Toast</div></div>
+    <div class="voice no"><div class="h">No</div><div class="l">"🎉 Awesome — saved!"</div><div class="lab">Toast</div></div>
+    <div class="voice yes"><div class="h">Yes</div><div class="l">"We couldn't reach Jira. Check your connection in Settings."</div><div class="lab">Error</div></div>
+    <div class="voice no"><div class="h">No</div><div class="l">"Oops! Something went wrong. Please try again."</div><div class="lab">Error</div></div>
+  </div>
+</div>
+</body></html>

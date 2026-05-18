@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .stage { background: var(--bg-1); border-radius: 14px; padding: 22px; display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--border-1); }
+  .av { width: 32px; height: 32px; border-radius: 999px; background: radial-gradient(circle at 30% 30%, #F1A48E, #E8927C 55%, #C46F58); flex-shrink: 0; box-shadow: 0 0 0 4px rgba(232, 146, 124, 0.10); position: relative; }
+  .av::after { content: ''; position: absolute; inset: -10px; border-radius: 999px; box-shadow: 0 0 0 4px rgba(232, 146, 124, 0.06); }
+  .bubble { background: var(--bg-2); border: 1px solid var(--border-1); border-radius: 12px; padding: 14px 16px; max-width: 480px; }
+  .bubble p { margin: 0; font-size: 14.5px; line-height: 21px; color: var(--fg-1); font-family: var(--font-body); }
+  .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-3); margin-top: 8px; }
+  .pulse { width: 7px; height: 7px; border-radius: 999px; background: var(--accent-coral); display: inline-block; box-shadow: 0 0 0 0 rgba(232, 146, 124, 0.5); animation: breathe 1.6s ease-in-out infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes breathe { 0%,100% { box-shadow: 0 0 0 0 rgba(232,146,124,0.5); opacity: 0.9; } 50% { box-shadow: 0 0 0 8px rgba(232,146,124,0); opacity: 1; } }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">The agent · voice + thinking state</span>
+  <div class="stage">
+    <div class="av"></div>
+    <div style="flex:1">
+      <div class="bubble">
+        <p>I read the brief. Three things to confirm before I draft: the audience (internal vs partner-facing), the rollout (gradual or all-at-once), and whether this needs SOC&nbsp;2 sign-off. Pick any to start.</p>
+      </div>
+      <div class="meta"><span class="pulse"></span>the agent · drafting…</div>
+    </div>
+  </div>
+</div>
+</body></html>

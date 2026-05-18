@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .sem { padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .sem .nm { font-family: var(--font-body); font-size: 13px; font-weight: 600; }
+  .sem .hx { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+  .sem .pill { font-family: var(--font-body); font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-flex; width: fit-content; margin-top: 6px; }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Semantic — desaturated, never stoplight</span>
+  <div class="grid4">
+    <div class="sem" style="background:#18241F;border:1px solid #1F3329">
+      <div class="nm" style="color:#7CCFA6">Success</div>
+      <div class="hx" style="color:#7CCFA6">#7CCFA6</div>
+      <span class="pill" style="background:#7CCFA6;color:#0F1A16">Saved</span>
+    </div>
+    <div class="sem" style="background:#2A2317;border:1px solid #3A301F">
+      <div class="nm" style="color:#E8C679">Warning</div>
+      <div class="hx" style="color:#E8C679">#E8C679</div>
+      <span class="pill" style="background:#E8C679;color:#241B0B">Stale 7d</span>
+    </div>
+    <div class="sem" style="background:#2A1818;border:1px solid #3A2020">
+      <div class="nm" style="color:#E08585">Danger</div>
+      <div class="hx" style="color:#E08585">#E08585</div>
+      <span class="pill" style="background:#E08585;color:#1F0B0B">Failed</span>
+    </div>
+    <div class="sem" style="background:#182230;border:1px solid #1F2D40">
+      <div class="nm" style="color:#8BB3E8">Info</div>
+      <div class="hx" style="color:#8BB3E8">#8BB3E8</div>
+      <span class="pill" style="background:#8BB3E8;color:#0B1524">Synced</span>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .swatch { display: flex; flex-direction: column; gap: 8px; }
+  .chip { height: 64px; border-radius: 10px; border: 1px solid var(--border-1); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); }
+  .swatch .name { font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--fg-1); }
+  .swatch .hex { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Canvas &amp; surfaces</span>
+  <div class="strip">
+    <div class="swatch"><div class="chip" style="background:#0F1216"></div><div class="name">canvas</div><div class="hex">#0F1216</div></div>
+    <div class="swatch"><div class="chip" style="background:#14181E"></div><div class="name">bg-1</div><div class="hex">#14181E</div></div>
+    <div class="swatch"><div class="chip" style="background:#181C24"></div><div class="name">bg-2 (card)</div><div class="hex">#181C24</div></div>
+    <div class="swatch"><div class="chip" style="background:#1E232C"></div><div class="name">bg-3 (hover)</div><div class="hex">#1E232C</div></div>
+    <div class="swatch"><div class="chip" style="background:#252A35"></div><div class="name">bg-4 (active)</div><div class="hex">#252A35</div></div>
+  </div>
+</div>
+</body></html>

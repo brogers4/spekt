@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .tree { font-family: var(--font-body); }
+  .row { display: flex; align-items: center; gap: 10px; padding: 7px 0; position: relative; }
+  .row .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; padding: 1.5px 6px; border-radius: 5px; text-transform: uppercase; flex-shrink: 0; }
+  .row .ti { font-size: 13px; color: var(--fg-1); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .id { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-3); flex-shrink: 0; }
+  .indent { padding-left: 22px; position: relative; }
+  .indent::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 50%; width: 1px; background: var(--border-2); }
+  .indent::after { content: ''; position: absolute; left: 8px; top: 50%; width: 12px; height: 1px; background: var(--border-2); }
+  .indent.last::before { bottom: 50%; }
+  .group { position: relative; padding-left: 0; }
+  .level-2 { padding-left: 44px; }
+  .level-2::before { left: 30px; }
+  .level-2::after { left: 30px; width: 12px; }
+  .branch { position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--border-2); }
+  .branch-2 { position: absolute; left: 30px; top: 0; bottom: 0; width: 1px; background: var(--border-2); }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Artifact tree · from one brief</span>
+  <div class="tree">
+    <div class="row">
+      <span class="tag" style="background:#2A1C18;color:#E8927C">PRFAQ</span>
+      <span class="ti" style="font-weight:600">Guided imports for new PO teams</span>
+      <span class="id">PRFAQ-014</span>
+    </div>
+    <div style="position:relative">
+      <div class="branch"></div>
+      <div class="row indent">
+        <span class="tag" style="background:#2A2317;color:#E8C679">PRD</span>
+        <span class="ti">Onboarding · v2 (new-team flow)</span>
+        <span class="id">PRD-0142</span>
+      </div>
+      <div style="position:relative">
+        <div class="branch-2"></div>
+        <div class="row indent level-2">
+          <span class="tag" style="background:#1A2522;color:#8FB9A8">EPIC</span>
+          <span class="ti">Stack detection at first run</span>
+          <span class="id">EPIC-074</span>
+        </div>
+        <div class="row indent level-2">
+          <span class="tag" style="background:#182230;color:#8BB3E8">STORY</span>
+          <span class="ti">Detect stack within 4s on P75</span>
+          <span class="id">STORY-432</span>
+        </div>
+        <div class="row indent level-2">
+          <span class="tag" style="background:#182230;color:#8BB3E8">STORY</span>
+          <span class="ti">Show "from your brief" badge</span>
+          <span class="id">STORY-433</span>
+        </div>
+        <div class="row indent level-2">
+          <span class="tag" style="background:var(--bg-3);color:var(--fg-2)">FLOW</span>
+          <span class="ti">Onboarding step-flow chart</span>
+          <span class="id">FLOW-018</span>
+        </div>
+        <div class="row indent level-2">
+          <span class="tag" style="background:var(--bg-3);color:var(--fg-2)">SEQ</span>
+          <span class="ti">Stack-detection sequence diagram</span>
+          <span class="id">SEQ-022</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+  .stage { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-1); }
+  .panel { padding: 24px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; min-height: 160px; }
+  .dark { background: var(--bg-1); }
+  .light { background: #ECEEF2; }
+  .panel .nm { font-family: var(--font-mono); font-size: 11px; }
+  .dark .nm { color: var(--fg-3); }
+  .light .nm { color: #555B68; }
+  .wm { display: flex; align-items: center; gap: 12px; }
+  .word { font-family: 'Bricolage Grotesque', system-ui; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+  .dark .word { color: var(--fg-1); }
+  .light .word { color: #0F1216; }
+</style></head>
+<body>
+<div class="card">
+  <span class="label">Logo · wordmark on light + dark</span>
+  <div class="stage">
+    <div class="panel dark">
+      <div class="wm">
+        <img src="../assets/logo-mark.svg" width="36" height="36" alt="" />
+        <span class="word">po agent</span>
+      </div>
+      <span class="nm">on canvas · #0F1216</span>
+    </div>
+    <div class="panel light">
+      <div class="wm">
+        <img src="../assets/logo-mark-mono-dark.svg" width="36" height="36" alt="" />
+        <span class="word">po agent</span>
+      </div>
+      <span class="nm">on paper · #ECEEF2</span>
+    </div>
+  </div>
+</div>
+</body></html>

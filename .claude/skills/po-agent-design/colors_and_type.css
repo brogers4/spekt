@@ -1,0 +1,266 @@
+/* ============================================================================
+ * PO Agent — Design Tokens
+ * Dark-first. Soft surfaces. Quiet accents. Spacious by default.
+ * ========================================================================== */
+
+/* -------- Fonts (Google Fonts) ------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ─── Color · Canvas / surfaces ────────────────────────────────────── */
+  --bg-canvas:        #0F1216;   /* page background */
+  --bg-1:             #14181E;   /* lowest surface */
+  --bg-2:             #181C24;   /* default card */
+  --bg-3:             #1E232C;   /* hover / nested card */
+  --bg-4:             #252A35;   /* selected / pressed */
+  --bg-inverse:       #ECEEF2;   /* rare; for light-on-dark inversions */
+
+  /* ─── Color · Foreground / text ────────────────────────────────────── */
+  --fg-1:             #ECEEF2;   /* primary text — never pure white */
+  --fg-2:             #B3B8C3;   /* secondary text, labels */
+  --fg-3:             #7C8290;   /* tertiary, metadata, icons in low-emphasis */
+  --fg-4:             #555B68;   /* disabled, placeholder */
+  --fg-on-accent:     #1A0F0B;   /* text on coral accent button */
+
+  /* ─── Color · Borders ──────────────────────────────────────────────── */
+  --border-1:         #22272F;   /* default hairline */
+  --border-2:         #2F3640;   /* focus / selected */
+  --border-3:         #3D4452;   /* high-contrast outline */
+
+  /* ─── Color · Accents ──────────────────────────────────────────────── */
+  --accent-coral:        #E8927C;  /* primary AI/action color */
+  --accent-coral-hover:  #DA8067;
+  --accent-coral-press:  #C46F58;
+  --accent-coral-soft:   #2A1C18;  /* coral-tinted bg for selected items */
+  --accent-coral-ring:   rgba(232, 146, 124, 0.40);
+
+  --accent-sage:         #8FB9A8;  /* secondary / confirmed state */
+  --accent-sage-hover:   #7CA897;
+  --accent-sage-soft:    #1A2522;
+
+  /* ─── Color · Semantic ─────────────────────────────────────────────── */
+  --success:          #7CCFA6;
+  --success-soft:     #18241F;
+  --warning:          #E8C679;
+  --warning-soft:     #2A2317;
+  --danger:           #E08585;
+  --danger-soft:      #2A1818;
+  --info:             #8BB3E8;
+  --info-soft:        #182230;
+
+  /* ─── Typography · Families ────────────────────────────────────────── */
+  --font-display:     'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-body:        'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:        'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ─── Typography · Scale ───────────────────────────────────────────── */
+  --text-xs:          12px;   --lh-xs:   16px;
+  --text-sm:          13px;   --lh-sm:   18px;
+  --text-base:        14px;   --lh-base: 20px;
+  --text-md:          15px;   --lh-md:   22px;
+  --text-lg:          17px;   --lh-lg:   24px;
+  --text-xl:          20px;   --lh-xl:   28px;
+  --text-2xl:         24px;   --lh-2xl:  32px;
+  --text-3xl:         30px;   --lh-3xl:  38px;
+  --text-4xl:         40px;   --lh-4xl:  48px;
+  --text-5xl:         56px;   --lh-5xl:  62px;
+
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.02em;
+  --tracking-caps:    0.08em;
+
+  /* ─── Spacing (4px base) ───────────────────────────────────────────── */
+  --space-0:          0;
+  --space-1:          4px;
+  --space-2:          8px;
+  --space-3:          12px;
+  --space-4:          16px;
+  --space-5:          20px;
+  --space-6:          24px;
+  --space-7:          32px;
+  --space-8:          40px;
+  --space-9:          48px;
+  --space-10:         64px;
+  --space-11:         80px;
+  --space-12:         96px;
+
+  /* ─── Radii ────────────────────────────────────────────────────────── */
+  --radius-xs:        4px;
+  --radius-sm:        6px;
+  --radius-md:        10px;
+  --radius-lg:        14px;
+  --radius-xl:        20px;
+  --radius-2xl:       28px;
+  --radius-full:      999px;
+
+  /* ─── Shadows · dark-first elevation ────────────────────────────────
+   * Elevation on dark UI is carried by a *light rim* (a hairline ring
+   * + a 1px inset highlight at the top edge that catches imagined light
+   * from above) rather than by a dark drop. The drop is still there at
+   * higher levels but is a secondary cue. Each step roughly doubles the
+   * rim opacity and the drop blur.
+   */
+  --shadow-1:
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 0 rgba(255,255,255,0.05),
+    0 1px 2px 0 rgba(0,0,0,0.30);
+  --shadow-2:
+    0 0 0 1px rgba(255,255,255,0.07),
+    inset 0 1px 0 0 rgba(255,255,255,0.08),
+    0 6px 16px -4px rgba(0,0,0,0.50);
+  --shadow-3:
+    0 0 0 1px rgba(255,255,255,0.10),
+    inset 0 1px 0 0 rgba(255,255,255,0.11),
+    0 16px 32px -8px rgba(0,0,0,0.55);
+  --shadow-4:
+    0 0 0 1px rgba(255,255,255,0.13),
+    inset 0 1px 0 0 rgba(255,255,255,0.14),
+    0 32px 64px -16px rgba(0,0,0,0.65);
+  --shadow-focus: 0 0 0 3px var(--accent-coral-ring);
+
+  /* ─── Motion ───────────────────────────────────────────────────────── */
+  --ease:             cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in:          cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-out:         cubic-bezier(0, 0.55, 0.45, 1);
+  --dur-fast:         120ms;
+  --dur-base:         180ms;
+  --dur-panel:        260ms;
+  --dur-page:         400ms;
+
+  /* ─── Layout ───────────────────────────────────────────────────────── */
+  --sidebar-w:        240px;
+  --sidebar-w-collapsed: 64px;
+  --topbar-h:         56px;
+  --inspector-w:      360px;
+  --content-prose:    720px;
+  --content-app:      1200px;
+}
+
+/* =========================================================================
+ *  Semantic / element-level rules
+ * ========================================================================= */
+
+html, body {
+  background: var(--bg-canvas);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* — Display / headings — */
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-4xl);
+  line-height: var(--lh-4xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-3xl);
+  line-height: var(--lh-3xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h3, .h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-2xl);
+  line-height: var(--lh-2xl);
+  color: var(--fg-1);
+}
+h4, .h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  line-height: var(--lh-lg);
+  color: var(--fg-1);
+}
+h5, .h5 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-md);
+  line-height: var(--lh-md);
+  color: var(--fg-1);
+}
+
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-5xl);
+  line-height: var(--lh-5xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* — Body — */
+p, .p-body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--lh-md);
+  color: var(--fg-2);
+}
+
+.text-muted     { color: var(--fg-3); }
+.text-faint     { color: var(--fg-4); }
+.text-fg        { color: var(--fg-1); }
+
+/* — Eyebrow / overline — */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+/* — Code / mono — */
+code, kbd, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--fg-2);
+}
+code {
+  background: var(--bg-3);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-1);
+}
+kbd {
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  color: var(--fg-2);
+}
+
+/* — Links — */
+a {
+  color: var(--accent-coral);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-base) var(--ease);
+}
+a:hover { border-bottom-color: var(--accent-coral); }
+
+/* — Focus — */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-xs);
+}
+
+/* — Selection — */
+::selection {
+  background: var(--accent-coral-soft);
+  color: var(--fg-1);
+}

@@ -12,11 +12,11 @@ export default function CLIInstructionsModal({ slug, project, artifactKey, onClo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg bg-surface-2 rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Generate {label} with Claude Code</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="text-base font-semibold text-fg-1">Generate {label} with Claude Code</h2>
+          <button onClick={onClose} className="text-fg-3 hover:text-fg-2 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
@@ -24,25 +24,25 @@ export default function CLIInstructionsModal({ slug, project, artifactKey, onClo
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-fg-2">
             Run this command in Claude Code — works from any directory:
           </p>
 
           <CopySnippet code={cmd} />
 
-          <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-800">
-            When Claude Code finishes writing the file, come back here and click <strong>Refresh</strong> to open it.
+          <div className="rounded-lg bg-warning-soft border border-border px-4 py-3 text-xs text-warning">
+            When Claude Code finishes, click <strong>Refresh</strong> to open the file.
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+        <div className="px-6 py-4 bg-surface-1 border-t border-border flex items-center justify-between">
+          <button onClick={onClose} className="text-sm text-fg-3 hover:text-fg-2 transition-colors">
             Cancel
           </button>
           <button
             onClick={refresh}
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            className="rounded-lg bg-coral px-5 py-2 text-sm font-medium text-fg-on-accent hover:bg-coral-hover transition-colors"
           >
             Refresh
           </button>
@@ -62,15 +62,15 @@ function CopySnippet({ code }) {
   }
 
   return (
-    <div className="flex gap-2 items-center rounded-md bg-gray-900 px-3 py-2 text-xs font-mono text-gray-100">
+    <div className="flex gap-2 items-center rounded-md bg-surface-4 px-3 py-2 text-xs font-mono text-fg-4">
       <span className="flex-1 select-all">{code}</span>
       <button
         onClick={copy}
-        className="flex-shrink-0 text-gray-400 hover:text-white transition-colors"
+        className="flex-shrink-0 text-fg-3 hover:text-fg-1 transition-colors"
         title="Copy"
       >
         {copied ? (
-          <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-success" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
           </svg>
         ) : (

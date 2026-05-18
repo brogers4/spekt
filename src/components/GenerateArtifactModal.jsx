@@ -53,7 +53,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
       }
     } catch (err) {
       setPhase(PHASES.preflight)
-      if (err.name !== 'AbortError') setError(err.message || 'Something went wrong.')
+      if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
     }
   }
 
@@ -70,7 +70,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
       await runGeneration({ readme, contextFiles, answers: resolvedAnswers, template })
     } catch (err) {
       setPhase(PHASES.questioning)
-      if (err.name !== 'AbortError') setError(err.message || 'Something went wrong.')
+      if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
     }
   }
 
@@ -91,12 +91,12 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg bg-surface-2 rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Generate {label}</h2>
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="text-base font-semibold text-fg-1">Generate {label}</h2>
           {phase === PHASES.preflight && (
-            <button onClick={cancel} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={cancel} className="text-fg-3 hover:text-fg-2 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
               </svg>
@@ -116,7 +116,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
                   failText={
                     <span>
                       Not set —{' '}
-                      <button onClick={() => { onClose(); navigate('/settings') }} className="text-indigo-600 underline">
+                      <button onClick={() => { onClose(); navigate('/settings') }} className="text-coral underline">
                         add in Settings
                       </button>
                     </span>
@@ -125,11 +125,11 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
                 <StatusRow
                   ok={contextCount !== null}
                   label="Context files"
-                  okText={contextCount === 0 ? 'None — Claude will work from the project description' : `${contextCount} file${contextCount === 1 ? '' : 's'} available`}
+                  okText={contextCount === 0 ? 'None — the agent will use your project description' : `${contextCount} file${contextCount === 1 ? '' : 's'} available`}
                   failText="Loading…"
                 />
               </div>
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2">{error}</p>}
             </div>
           )}
 
@@ -137,15 +137,15 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
           {phase === PHASES.gathering && (
             <div className="flex flex-col items-center py-4 gap-3">
               <Spinner />
-              <p className="text-sm text-gray-600">Reviewing your context…</p>
+              <p className="text-sm text-fg-2">Reviewing your context…</p>
             </div>
           )}
 
           {/* Questioning */}
           {phase === PHASES.questioning && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                A few things are needed to complete the {label}. Choose how to handle each:
+              <p className="text-sm text-fg-2">
+                The agent needs a few more details to finish the {label}. Choose how to handle each one:
               </p>
               <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                 {unknowns.map((u) => (
@@ -157,7 +157,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
                   />
                 ))}
               </div>
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2">{error}</p>}
             </div>
           )}
 
@@ -165,16 +165,16 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
           {phase === PHASES.generating && (
             <div className="flex flex-col items-center py-4 gap-3">
               <Spinner />
-              <p className="text-sm text-gray-600">Generating your {label}…</p>
+              <p className="text-sm text-fg-2">Generating your {label}…</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        <div className="px-6 py-4 bg-surface-1 border-t border-border flex items-center justify-between">
           <button
             onClick={cancel}
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-sm text-fg-3 hover:text-fg-2 transition-colors"
           >
             Cancel
           </button>
@@ -183,7 +183,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
             <button
               onClick={start}
               disabled={!apiKeyReady}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-coral px-5 py-2 text-sm font-medium text-fg-on-accent hover:bg-coral-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Start
             </button>
@@ -193,7 +193,7 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
             <button
               onClick={continueGeneration}
               disabled={!allAnswered}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-coral px-5 py-2 text-sm font-medium text-fg-on-accent hover:bg-coral-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Continue
             </button>
@@ -208,21 +208,21 @@ function StatusRow({ ok, label, okText, failText }) {
   return (
     <div className="flex items-start gap-2.5 text-sm">
       {ok !== null && (
-        <span className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${ok ? 'bg-green-100' : 'bg-red-100'}`}>
+        <span className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${ok ? 'bg-success-soft' : 'bg-danger-soft'}`}>
           {ok ? (
-            <svg className="w-2.5 h-2.5 text-green-600" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+            <svg className="w-2.5 h-2.5 text-success" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
             </svg>
           ) : (
-            <svg className="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+            <svg className="w-2.5 h-2.5 text-danger" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           )}
         </span>
       )}
       <div>
-        <span className="font-medium text-gray-700">{label}:</span>{' '}
-        <span className="text-gray-500">{ok ? okText : failText}</span>
+        <span className="font-medium text-fg-2">{label}:</span>{' '}
+        <span className="text-fg-3">{ok ? okText : failText}</span>
       </div>
     </div>
   )
@@ -249,19 +249,19 @@ function UnknownCard({ unknown, value, onChange }) {
   const resolved = value !== null
 
   return (
-    <div className={`rounded-lg border p-3 text-sm transition-colors ${resolved ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'}`}>
-      <p className="font-medium text-gray-800 mb-2">{unknown.question}</p>
+    <div className={`rounded-lg border p-3 text-sm transition-colors ${resolved ? 'border-border bg-success-soft' : 'border-border bg-surface-2'}`}>
+      <p className="font-medium text-fg-1 mb-2">{unknown.question}</p>
 
       {!mode && (
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => selectMode('provide')} className="px-2.5 py-1 rounded-md border border-gray-300 text-xs text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-            I'll provide the answer
+          <button onClick={() => selectMode('provide')} className="px-2.5 py-1 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:text-coral transition-colors">
+            Enter my own answer
           </button>
-          <button onClick={() => selectMode('placeholder')} className="px-2.5 py-1 rounded-md border border-gray-300 text-xs text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+          <button onClick={() => selectMode('placeholder')} className="px-2.5 py-1 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:text-coral transition-colors">
             Leave a placeholder
           </button>
           {unknown.suggestions?.length > 0 && (
-            <button onClick={() => selectMode('suggest')} className="px-2.5 py-1 rounded-md border border-gray-300 text-xs text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+            <button onClick={() => selectMode('suggest')} className="px-2.5 py-1 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:text-coral transition-colors">
               Show suggestions
             </button>
           )}
@@ -277,12 +277,12 @@ function UnknownCard({ unknown, value, onChange }) {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commitInput()}
             placeholder="Type your answer…"
-            className="flex-1 rounded-md border border-gray-300 px-2.5 py-1 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+            className="flex-1 rounded-md border border-border px-2.5 py-1 text-xs outline-none"
           />
-          <button onClick={commitInput} disabled={!inputValue.trim()} className="px-3 py-1 rounded-md bg-indigo-600 text-white text-xs hover:bg-indigo-700 disabled:opacity-40 transition-colors">
+          <button onClick={commitInput} disabled={!inputValue.trim()} className="px-3 py-1 rounded-md bg-coral text-fg-on-accent text-xs hover:bg-coral-hover disabled:opacity-40 transition-colors">
             Set
           </button>
-          <button onClick={() => { setMode(null); setInputValue('') }} className="px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-500 hover:bg-gray-100 transition-colors">
+          <button onClick={() => { setMode(null); setInputValue('') }} className="px-2 py-1 rounded-md border border-border text-xs text-fg-3 hover:bg-surface-3 transition-colors">
             Back
           </button>
         </div>
@@ -294,19 +294,19 @@ function UnknownCard({ unknown, value, onChange }) {
             <button
               key={s}
               onClick={() => selectSuggestion(s)}
-              className="block w-full text-left px-2.5 py-1.5 rounded-md border border-gray-200 text-xs text-gray-700 hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
+              className="block w-full text-left px-2.5 py-1.5 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:bg-coral-soft transition-colors"
             >
               {s}
             </button>
           ))}
-          <button onClick={() => setMode(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1 pt-1 transition-colors">← Back</button>
+          <button onClick={() => setMode(null)} className="text-xs text-fg-3 hover:text-fg-2 px-1 pt-1 transition-colors">← Back</button>
         </div>
       )}
 
       {resolved && (
         <div className="mt-1.5 flex items-center justify-between">
-          <span className="text-xs text-green-700 font-medium">{value}</span>
-          <button onClick={() => { setMode(null); onChange(null) }} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">Change</button>
+          <span className="text-xs text-success font-medium">{value}</span>
+          <button onClick={() => { setMode(null); onChange(null) }} className="text-xs text-fg-3 hover:text-fg-2 transition-colors">Change</button>
         </div>
       )}
     </div>
@@ -315,7 +315,7 @@ function UnknownCard({ unknown, value, onChange }) {
 
 function Spinner() {
   return (
-    <svg className="w-8 h-8 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24">
+    <svg className="w-8 h-8 text-coral animate-spin" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
