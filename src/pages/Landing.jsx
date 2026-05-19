@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLayout } from '../context/LayoutContext'
-import logoLockup from '../assets/spekt-lockup.png'
+import logoLockup from '../assets/lockup-horizontal.png'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -23,10 +23,11 @@ export default function Landing() {
 
   return (
     <div className="max-w-[720px] mx-auto py-10 px-8">
-      <img src={logoLockup} alt="spekt." className="h-32 w-auto" />
-      <p className="mt-3 text-lg text-fg-3">
-        Answer a few questions about your product and get a full suite of artifacts
-        generated and stored locally on your machine.
+      <div className="flex justify-center">
+        <img src={logoLockup} alt="spekt." className="w-[24rem] max-w-full h-auto" />
+      </div>
+      <p className="mt-4 text-lg text-fg-3 text-center">
+        Turn product thinking into polished artifacts — stored locally, generated with AI.
       </p>
 
       <div className="mt-8">
