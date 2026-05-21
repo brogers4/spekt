@@ -33,12 +33,13 @@ export default function Project() {
   const [generatingArtifact, setGeneratingArtifact] = useState(null)
 
   const project = projects.find((p) => p.slug === slug)
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     if (!project) return
     setTitle(project.name)
     setCrumbs([{ label: 'All projects', href: '/projects' }])
+    setBack('/projects')
   }, [project?.name])
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({

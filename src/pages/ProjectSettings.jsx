@@ -8,7 +8,7 @@ export default function ProjectSettings() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { projects, refreshProjects } = useWorkspace()
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   const project = projects.find((p) => p.slug === slug)
 
@@ -19,6 +19,7 @@ export default function ProjectSettings() {
       { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
+    setBack(`/project/${slug}`)
   }, [project?.name, slug])
 
   const [form, setForm] = useState({ name: '', description: '' })

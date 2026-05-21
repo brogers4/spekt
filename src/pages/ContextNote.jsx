@@ -25,7 +25,7 @@ export default function ContextNote() {
   const decodedFilename = creating ? 'new' : decodeURIComponent(filename)
 
   const project = projects.find((p) => p.slug === slug)
-  const { setTitle: setPageTitle, setCrumbs } = useLayout()
+  const { setTitle: setPageTitle, setCrumbs, setBack } = useLayout()
 
   // New note state
   const [title, setTitle] = useState('')
@@ -85,6 +85,7 @@ export default function ContextNote() {
       { label: project.name, href: `/project/${slug}` },
       { label: 'Context', href: `/project/${slug}/context` },
     ])
+    setBack(`/project/${slug}/context`)
   }, [project?.name, slug, displayTitle])
 
   if (!project) {

@@ -7,11 +7,12 @@ import logoLockup from '../assets/lockup-horizontal.png'
 export default function Landing() {
   const navigate = useNavigate()
   const { projects, loading } = useWorkspace()
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     setTitle('')
     setCrumbs([])
+    setBack(null)
   }, [])
 
   const recent = projects.slice(0, 5)

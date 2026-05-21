@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLayout } from '../context/LayoutContext'
 
 export default function TopBar() {
-  const { title, crumbs, setMobileOpen } = useLayout()
+  const { title, crumbs, back, setMobileOpen } = useLayout()
   const navigate = useNavigate()
 
   return (
@@ -17,6 +17,19 @@ export default function TopBar() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
       </button>
+
+      {/* Back button */}
+      {back && (
+        <button
+          onClick={() => navigate(back)}
+          title="Go back"
+          className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-surface-2 border border-border text-fg-2 hover:text-fg-1 hover:bg-surface-3 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+      )}
 
       {/* Breadcrumbs + title */}
       <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">

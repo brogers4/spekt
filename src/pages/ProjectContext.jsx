@@ -63,7 +63,7 @@ export default function ProjectContext() {
   const dragCounter = useRef(0)
 
   const project = projects.find((p) => p.slug === slug)
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     if (!project) return
@@ -72,6 +72,7 @@ export default function ProjectContext() {
       { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
+    setBack(`/project/${slug}`)
   }, [project?.name, slug])
 
   useEffect(() => {

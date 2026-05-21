@@ -5,11 +5,12 @@ import { getApiKey, setApiKey, hasApiKey, getCliMode, setCliMode } from '../lib/
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     setTitle('Settings')
     setCrumbs([])
+    setBack(null)
   }, [])
   const [keyInput, setKeyInput] = useState(getApiKey())
   const [revealed, setRevealed] = useState(false)

@@ -7,7 +7,7 @@ import { createProject } from '../lib/fs'
 export default function NewProject() {
   const navigate = useNavigate()
   const { refreshProjects } = useWorkspace()
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
   const [form, setForm] = useState({ name: '', description: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -15,6 +15,7 @@ export default function NewProject() {
   useEffect(() => {
     setTitle('New project')
     setCrumbs([{ label: 'All projects', href: '/projects' }])
+    setBack(null)
   }, [])
 
   const handleChange = (e) => {

@@ -7,11 +7,12 @@ export default function AllProjects() {
   const navigate = useNavigate()
   const { projects, loading } = useWorkspace()
   const [projectsRoot, setProjectsRoot] = useState(null)
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     setTitle('All projects')
     setCrumbs([])
+    setBack(null)
   }, [])
 
   useEffect(() => {

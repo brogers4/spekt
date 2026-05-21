@@ -31,7 +31,7 @@ export default function ArtifactView() {
   const project = projects.find((p) => p.slug === slug)
   const filename = key
   const label = artifactLabel(slug, filename)
-  const { setTitle, setCrumbs } = useLayout()
+  const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
     if (!project) return
@@ -40,6 +40,7 @@ export default function ArtifactView() {
       { label: 'All projects', href: '/projects' },
       { label: project.name, href: `/project/${slug}` },
     ])
+    setBack(`/project/${slug}`)
   }, [project?.name, slug, label])
 
   const { editing, draft, setDraft, saving, saved, textareaRef, textareaHeight, startEditing, cancelEditing, save, handleKeyDown } = useMarkdownEditor({

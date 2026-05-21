@@ -5,6 +5,7 @@ const LayoutContext = createContext(null)
 export function LayoutProvider({ children }) {
   const [title, setTitle] = useState('')
   const [crumbs, setCrumbs] = useState([])
+  const [back, setBack] = useState(null)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('sidebar-collapsed') === 'true'
   )
@@ -19,7 +20,7 @@ export function LayoutProvider({ children }) {
   }
 
   return (
-    <LayoutContext.Provider value={{ title, setTitle, crumbs, setCrumbs, collapsed, toggleCollapsed, mobileOpen, setMobileOpen }}>
+    <LayoutContext.Provider value={{ title, setTitle, crumbs, setCrumbs, back, setBack, collapsed, toggleCollapsed, mobileOpen, setMobileOpen }}>
       {children}
     </LayoutContext.Provider>
   )
