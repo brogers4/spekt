@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLayout } from '../context/LayoutContext'
-import { getApiKey, setApiKey, hasApiKey, getCliMode, setCliMode } from '../lib/claude'
+import { getApiKey, setApiKey, hasApiKey, getCliMode, setCliMode, getAuthor, setAuthor } from '../lib/claude'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -17,6 +17,8 @@ export default function Settings() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState(null)
   const [cliMode, setCliModeState] = useState(getCliMode())
+  const [authorInput, setAuthorInput] = useState(getAuthor())
+  const [authorSaved, setAuthorSaved] = useState(false)
 
   function handleSave(e) {
     e.preventDefault()
@@ -35,11 +37,60 @@ export default function Settings() {
     setCliMode(useCliMode)
   }
 
+  function handleAuthorSave(e) {
+    e.preventDefault()
+    setAuthor(authorInput)
+    setAuthorSaved(true)
+    setTimeout(() => setAuthorSaved(false), 2500)
+  }
+
+  const isAuthorDirty = authorInput !== getAuthor()
+
   const isDirty = keyInput !== getApiKey()
 
   return (
     <div className="max-w-[720px] mx-auto py-10 px-8">
       <h1 className="text-2xl font-bold text-fg-1 mb-8 font-display">Settings</h1>
+
+      {/* Author */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold text-fg-3 uppercase tracking-wide mb-4">Author</h2>
+        <form onSubmit={handleAuthorSave} className="bg-surface-2 border border-border rounded-lg shadow-sm divide-y divide-border">
+          <div className="px-5 py-4">
+            <label htmlFor="author-name" className="block text-sm font-medium text-fg-2 mb-1">
+              Your name
+            </label>
+            <input
+              id="author-name"
+              type="text"
+              value={authorInput}
+              onChange={(e) => { setAuthorInput(e.target.value); setAuthorSaved(false) }}
+              placeholder="e.g. Jane Smith"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-border-strong transition-colors bg-surface-1 text-fg-1"
+            />
+            <p className="mt-1.5 text-xs text-fg-3">
+              Used as the author field in generated PRDs and other artifacts.
+            </p>
+          </div>
+          <div className="px-5 py-4 bg-surface-1 flex items-center justify-between rounded-b-lg">
+            {authorSaved ? (
+              <span className="text-xs text-success flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+                Saved
+              </span>
+            ) : <span />}
+            <button
+              type="submit"
+              disabled={!isAuthorDirty}
+              className="rounded-lg bg-coral px-4 py-2 text-sm font-medium text-fg-on-accent hover:bg-coral-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </section>
 
       {/* Generation Method */}
       <section className="mb-8">

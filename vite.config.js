@@ -129,6 +129,13 @@ async function handleApi(req, res) {
       await nodeFsP.writeFile(filePath, content, 'utf8')
       return jsonResponse(res, 200, {})
     }
+
+    if (method === 'DELETE') {
+      try { await nodeFsP.unlink(filePath) } catch { /* already gone */ }
+      res.statusCode = 204
+      res.end()
+      return
+    }
   }
 
   if (slugContextListMatch) {

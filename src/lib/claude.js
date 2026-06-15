@@ -22,6 +22,21 @@ export function setCliMode(enabled) {
   }
 }
 
+const AUTHOR_KEY = 'spekt:author'
+
+export function getAuthor() {
+  return localStorage.getItem(AUTHOR_KEY) ?? ''
+}
+
+export function setAuthor(name) {
+  const trimmed = name.trim()
+  if (trimmed) {
+    localStorage.setItem(AUTHOR_KEY, trimmed)
+  } else {
+    localStorage.removeItem(AUTHOR_KEY)
+  }
+}
+
 export function getApiKey() {
   return localStorage.getItem(KEY) ?? ''
 }
@@ -89,6 +104,167 @@ Rules:
     console.error('Failed to parse unknowns response:', text)
     return []
   }
+}
+
+// Generate a PRD (no upfront questioning — TBD markers are flagged for post-generation review)
+export async function generatePrd({ readme, contextFiles, prfaqContent, template, author, signal }) {
+  const client = createClient()
+
+  const contextBlock = contextFiles.length
+    ? contextFiles.map((f) => `### ${f.filename}\n${f.content}`).join('\n\n')
+    : '(No context files provided)'
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const stream = await client.messages.stream(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: `You are an expert product manager generating a PRD. Follow the template and rules below exactly.
+
+TEMPLATE:
+${template}
+
+${prfaqContent ? `PRFAQ (HIGHEST PRIORITY CONTEXT — treat as the authoritative source for product vision, customer segment, problem framing, and solution direction):
+${prfaqContent}
+
+` : ''}RULES:
+SCOPE:
+- This PRD covers the entire project — its full vision, goals, and scope. Do NOT focus on a single feature or sub-feature unless the project itself is a single feature.
+- If context files describe multiple features, capabilities, or user flows, synthesize them into a holistic product view.
+
+CONTENT:
+- Fill in all sections using the provided context. Where information is genuinely unknown, insert [TBD] — do not invent details.
+- The document should read as a cohesive narrative. Bullets and tables are allowed but should complement the prose, not replace it.
+- Status should be "Draft" for all newly generated PRDs.
+- Revision History: set Rev to 1, Date to ${today}, Author to ${author || '[Author]'}, Summary to "Initial draft".
+- Keep the body (everything before appendices) to approximately 6 pages or fewer. Be concise.
+
+OPTIONAL SECTIONS:
+- Wireframes, lo-fi mockups, UI/UX diagrams, architecture diagrams: include ONLY if relevant material is present in the provided context. If not, omit the section entirely — do NOT insert [TBD] or placeholder text. Flag these as review items instead.
+- Appendix B and Appendix C: include only if there is meaningful content to put there. Otherwise omit them.
+
+DELIVERY PLAN:
+- Use a single phase if that is the most appropriate approach for the project's complexity and scope.
+- Use multiple phases only when there is a clear reason: staged rollout, meaningful scope/dependency differences, or distinct user-value milestones.
+- Name phases based on what makes sense for this specific project (e.g., "Beta", "v1.0", "Phase 1", "Full Launch") — do not default to "MVP / MVP+1 / MVP+2" unless that framing genuinely fits.
+- If phasing is unclear from the context, write a single-phase plan and flag it as a review item.
+
+REQUIREMENTS:
+- Appendix A requirements: use SHALL/SHOULD/MAY keywords in ALL CAPS. Each requirement must be from the customer/stakeholder perspective and must NOT dictate implementation unless explicitly required by the customer.
+- Requirement IDs must follow the pattern PRD-NNN (PRD-001, PRD-002, etc.).
+
+FORMAT:
+- Do not add extra sections beyond those in the template.
+- Do not include meta-commentary, preamble, or closing remarks — output only the PRD markdown.`,
+      messages: [
+        {
+          role: 'user',
+          content: `Project README:\n${readme || '(none)'}\n\nContext files:\n${contextBlock}\n\nGenerate the complete PRD now. Today's date is ${today}.`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  let result = ''
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      result += event.delta.text
+    }
+  }
+  return result
+}
+
+// Identify open questions, gaps, and decisions after a PRD is generated
+export async function generatePrdReviewItems({ prdContent, signal }) {
+  const client = createClient()
+
+  const message = await client.messages.create(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      system: `You are a senior PM reviewing a newly generated PRD. Identify open items that the author needs to address or consider before the PRD is ready for stakeholder review.
+
+Return ONLY a valid JSON array (no markdown, no explanation) in this format:
+[{ "id": "r1", "type": "question|gap|decision", "title": "Short title (max 10 words)", "detail": "1-2 sentence explanation of what needs to be addressed and why it matters" }]
+
+Focus on:
+- [TBD] placeholders that need to be filled in
+- Assumptions that are stated but not validated
+- Key decisions that are not yet made
+- Missing alignment items (stakeholders, dependencies, dates)
+- Requirements that are vague or untestable
+- Optional supporting materials that were omitted but would meaningfully strengthen the PRD (e.g. wireframes, architecture diagrams). For these, frame the detail as an invitation: explain what value the material would add and how the author can provide it. Do NOT treat these as blocking issues — they are suggestions.
+
+Do NOT flag style issues, grammar, or formatting. Limit to 8 items maximum — prioritize the most important ones. Return [] if the PRD is complete and ready for review.`,
+      messages: [
+        { role: 'user', content: `Review this PRD and return the JSON array of open items:\n\n${prdContent}` },
+      ],
+    },
+    { signal }
+  )
+
+  const text = message.content[0].text.trim()
+  const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  try {
+    return JSON.parse(stripped)
+  } catch {
+    console.error('Failed to parse PRD review items:', text)
+    return []
+  }
+}
+
+// Revise a PRD based on user feedback on a specific review item
+export async function revisePrdFromFeedback({ prdContent, reviewItem, feedback, signal }) {
+  const client = createClient()
+
+  const stream = await client.messages.stream(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: `You are an expert product manager revising a PRD based on specific feedback. Apply the feedback precisely and return the complete updated PRD markdown. Do not add commentary, preamble, or closing remarks — output only the revised PRD.`,
+      messages: [
+        {
+          role: 'user',
+          content: `PRD to revise:\n\n${prdContent}\n\n---\n\nReview item being addressed:\nType: ${reviewItem.type}\nTitle: ${reviewItem.title}\nDetail: ${reviewItem.detail}\n\nUser feedback:\n${feedback}\n\nApply this feedback to the PRD and return the complete revised document.`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  let result = ''
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      result += event.delta.text
+    }
+  }
+  return result
+}
+
+// Increment the revision number in a PRD and add a change summary row
+export async function incrementPrdRevision({ contentBefore, contentAfter, signal }) {
+  const client = createClient()
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const message = await client.messages.create(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: `You are a technical writer updating the Revision History section of a PRD. Given the before and after versions of a PRD, determine the next revision number, write a brief change summary (1 sentence, max 15 words), and return the complete updated PRD markdown with the new revision row added to the Revision History table and the "Current Revision" and "Last Updated" fields updated. Do not change any other content. Output only the updated PRD markdown with no preamble or commentary.`,
+      messages: [
+        {
+          role: 'user',
+          content: `Today's date: ${today}\n\nPRD BEFORE edits:\n${contentBefore}\n\n---\n\nPRD AFTER edits:\n${contentAfter}\n\nReturn the complete updated PRD with the new revision row added.`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  return message.content[0].text.trim()
 }
 
 // Phase 2: generate the full PRFAQ

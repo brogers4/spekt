@@ -100,3 +100,18 @@ export async function writeContextFile(slug, filename, content) {
 export async function deleteContextFile(slug, filename) {
   await api(`/api/projects/${slug}/context/${encodeURIComponent(filename)}`, { method: 'DELETE' })
 }
+
+export async function readPrdReview(slug) {
+  const content = await readArtifact(slug, `${slug}-prd-review.json`)
+  if (!content) return []
+  try { return JSON.parse(content) } catch { return [] }
+}
+
+export async function writePrdReview(slug, items) {
+  await writeArtifact(slug, `${slug}-prd-review.json`, JSON.stringify(items, null, 2))
+}
+
+export async function deleteArtifact(slug, filename) {
+  const res = await api(`/api/projects/${slug}/files/${encodeURIComponent(filename)}`, { method: 'DELETE' })
+  if (!res.ok && res.status !== 204) throw new Error('Failed to delete file')
+}

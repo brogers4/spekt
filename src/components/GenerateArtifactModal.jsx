@@ -1,19 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { hasApiKey, identifyPrfaqUnknowns, generatePrfaq } from '../lib/claude'
-import { readArtifact, writeArtifact, listContextFiles, readContextFile } from '../lib/fs'
+import { hasApiKey, identifyPrfaqUnknowns, generatePrfaq, generatePrd, generatePrdReviewItems, getAuthor, setAuthor } from '../lib/claude'
+import { readArtifact, writeArtifact, listContextFiles, readContextFile, writePrdReview } from '../lib/fs'
 import prfaqTemplate from '../templates/prfaq.template.md?raw'
+import prdTemplate from '../templates/prd.template.md?raw'
 
 const PHASES = { preflight: 0, gathering: 1, questioning: 2, generating: 3 }
 const ARTIFACT_LABELS = { prfaq: 'PRFAQ', prd: 'PRD', epics: 'Epics', 'user-stories': 'User stories', backlog: 'Backlog' }
 
-export default function GenerateArtifactModal({ slug, project, artifactKey, onClose }) {
+export default function GenerateArtifactModal({ slug, project, artifactKey, artifactStatus = {}, onClose }) {
   const navigate = useNavigate()
   const [phase, setPhase] = useState(PHASES.preflight)
   const [contextCount, setContextCount] = useState(null)
+  const [readme, setReadme] = useState(null)
   const [unknowns, setUnknowns] = useState([])
   const [answers, setAnswers] = useState({})
   const [error, setError] = useState(null)
+  const [generatingLabel, setGeneratingLabel] = useState('')
+  const [authorInput, setAuthorInput] = useState(getAuthor())
+  // PRD preflight acknowledgements
+  const [ackNoPrfaq, setAckNoPrfaq] = useState(false)
+  const [ackLowContext, setAckLowContext] = useState(false)
   const abortRef = useRef(null)
 
   const apiKeyReady = hasApiKey()
@@ -22,13 +29,29 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
     : artifactKey.replace(/\.md$/, '')
   const label = ARTIFACT_LABELS[type] ?? type
 
+  const prfaqKey = `${slug}-prfaq.md`
+  const prfaqExists = !!artifactStatus[prfaqKey]
+  const isLowContext = contextCount === 0 && readme !== null && !readme.trim() && !prfaqExists
+
+  // PRD-specific warnings
+  const showNoPrfaqWarning = type === 'prd' && !prfaqExists
+  const showLowContextWarning = type === 'prd' && isLowContext
+
+  const startEnabled = apiKeyReady &&
+    contextCount !== null &&
+    (type !== 'prd' || readme !== null) &&
+    (type !== 'prd' || authorInput.trim().length > 0) &&
+    (!showNoPrfaqWarning || ackNoPrfaq) &&
+    (!showLowContextWarning || ackLowContext)
+
   useEffect(() => {
     listContextFiles(slug).then((f) => setContextCount(f.length))
+    readArtifact(slug, 'README.md').then(setReadme)
     return () => abortRef.current?.abort()
   }, [slug])
 
   async function loadContext() {
-    const readme = await readArtifact(slug, 'README.md')
+    const rmContent = await readArtifact(slug, 'README.md')
     const files = await listContextFiles(slug)
     const contextFiles = await Promise.all(
       files.map(async (f) => {
@@ -37,19 +60,37 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
         return content ? { filename: f.filename, content } : null
       })
     )
-    return { readme, contextFiles: contextFiles.filter(Boolean) }
+    const prfaqContent = await readArtifact(slug, `${slug}-prfaq.md`)
+    return { readme: rmContent, contextFiles: contextFiles.filter(Boolean), prfaqContent }
   }
 
   async function start() {
     setError(null)
-    setPhase(PHASES.gathering)
     abortRef.current = new AbortController()
+
+    if (type === 'prd') {
+      // Save author if entered
+      if (authorInput.trim()) setAuthor(authorInput.trim())
+      setGeneratingLabel('Generating your PRD…')
+      setPhase(PHASES.generating)
+      try {
+        const { readme: rm, contextFiles, prfaqContent } = await loadContext()
+        await runPrdGeneration({ readme: rm, contextFiles, prfaqContent })
+      } catch (err) {
+        setPhase(PHASES.preflight)
+        if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
+      }
+      return
+    }
+
+    // PRFAQ and other types: existing flow
+    setPhase(PHASES.gathering)
     try {
-      const { readme, contextFiles } = await loadContext()
+      const { readme: rm, contextFiles } = await loadContext()
       const template = prfaqTemplate
-      const found = await identifyPrfaqUnknowns({ readme, contextFiles, signal: abortRef.current.signal })
+      const found = await identifyPrfaqUnknowns({ readme: rm, contextFiles, signal: abortRef.current.signal })
       if (found.length === 0) {
-        await runGeneration({ readme, contextFiles, answers: {}, template })
+        await runGeneration({ readme: rm, contextFiles, answers: {}, template })
       } else {
         setUnknowns(found)
         setAnswers(Object.fromEntries(found.map((u) => [u.field, null])))
@@ -66,22 +107,49 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
     setPhase(PHASES.generating)
     abortRef.current = new AbortController()
     try {
-      const { readme, contextFiles } = await loadContext()
+      const { readme: rm, contextFiles } = await loadContext()
       const template = prfaqTemplate
       const resolvedAnswers = Object.fromEntries(
         Object.entries(answers).map(([k, v]) => [k, v ?? '[placeholder]'])
       )
-      await runGeneration({ readme, contextFiles, answers: resolvedAnswers, template })
+      await runGeneration({ readme: rm, contextFiles, answers: resolvedAnswers, template })
     } catch (err) {
       setPhase(PHASES.questioning)
       if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
     }
   }
 
-  async function runGeneration({ readme, contextFiles, answers, template }) {
+  async function runGeneration({ readme: rm, contextFiles, answers: ans, template }) {
+    setGeneratingLabel(`Generating your ${label}…`)
     setPhase(PHASES.generating)
-    const result = await generatePrfaq({ readme, contextFiles, answers, template, signal: abortRef.current.signal })
+    const result = await generatePrfaq({ readme: rm, contextFiles, answers: ans, template, signal: abortRef.current.signal })
     await writeArtifact(slug, artifactKey, result)
+    onClose()
+    navigate(`/project/${slug}/artifact/${artifactKey}`)
+  }
+
+  async function runPrdGeneration({ readme: rm, contextFiles, prfaqContent }) {
+    setGeneratingLabel('Generating your PRD…')
+    const prdResult = await generatePrd({
+      readme: rm,
+      contextFiles,
+      prfaqContent,
+      template: prdTemplate,
+      author: authorInput.trim(),
+      signal: abortRef.current.signal,
+    })
+    await writeArtifact(slug, artifactKey, prdResult)
+
+    setGeneratingLabel('Identifying review items…')
+    try {
+      const reviewItems = await generatePrdReviewItems({ prdContent: prdResult, signal: abortRef.current.signal })
+      if (reviewItems.length > 0) {
+        await writePrdReview(slug, reviewItems)
+      }
+    } catch {
+      // Non-fatal: review items failing shouldn't block navigation
+    }
+
     onClose()
     navigate(`/project/${slug}/artifact/${artifactKey}`)
   }
@@ -133,6 +201,45 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
                   failText="Loading…"
                 />
               </div>
+
+              {/* PRD-specific warnings */}
+              {showNoPrfaqWarning && (
+                <WarningRow
+                  acknowledged={ackNoPrfaq}
+                  onAcknowledge={() => setAckNoPrfaq(true)}
+                  message="Recommended: generate the PRFAQ first — it gives the PRD a stronger foundation."
+                  action={
+                    <button
+                      onClick={() => { onClose(); navigate(`/project/${slug}`, { state: { generateArtifact: `${slug}-prfaq.md` } }) }}
+                      className="text-amber-400 underline whitespace-nowrap"
+                    >
+                      Generate PRFAQ
+                    </button>
+                  }
+                />
+              )}
+              {showLowContextWarning && (
+                <WarningRow
+                  acknowledged={ackLowContext}
+                  onAcknowledge={() => setAckLowContext(true)}
+                  message="Very little project information found — the PRD may be largely speculative."
+                />
+              )}
+
+              {type === 'prd' && (
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-fg-2">Author name</label>
+                  <input
+                    type="text"
+                    value={authorInput}
+                    onChange={(e) => setAuthorInput(e.target.value)}
+                    placeholder="e.g. Jane Smith"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-border-strong transition-colors bg-surface-1 text-fg-1"
+                  />
+                  <p className="text-xs text-fg-3">Used in the revision history. You can set a default in Settings.</p>
+                </div>
+              )}
+
               {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2">{error}</p>}
             </div>
           )}
@@ -169,24 +276,21 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, onCl
           {phase === PHASES.generating && (
             <div className="flex flex-col items-center py-4 gap-3">
               <Spinner />
-              <p className="text-sm text-fg-2">Generating your {label}…</p>
+              <p className="text-sm text-fg-2">{generatingLabel || `Generating your ${label}…`}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-1 border-t border-border flex items-center justify-between">
-          <button
-            onClick={cancel}
-            className="text-sm text-fg-3 hover:text-fg-2 transition-colors"
-          >
+          <button onClick={cancel} className="text-sm text-fg-3 hover:text-fg-2 transition-colors">
             Cancel
           </button>
 
           {phase === PHASES.preflight && (
             <button
               onClick={start}
-              disabled={!apiKeyReady}
+              disabled={!startEnabled}
               className="rounded-lg bg-coral px-5 py-2 text-sm font-medium text-fg-on-accent hover:bg-coral-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Start
@@ -232,6 +336,30 @@ function StatusRow({ ok, label, okText, failText }) {
   )
 }
 
+function WarningRow({ acknowledged, onAcknowledge, message, action }) {
+  return (
+    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm space-y-2">
+      <div className="flex items-start gap-2">
+        <svg className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+        </svg>
+        <span className="text-amber-200 flex-1">{message}{action && <>{' '}{action}</>}</span>
+      </div>
+      {!acknowledged && (
+        <button
+          onClick={onAcknowledge}
+          className="ml-6 text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
+        >
+          Continue anyway
+        </button>
+      )}
+      {acknowledged && (
+        <p className="ml-6 text-xs text-amber-500">Acknowledged</p>
+      )}
+    </div>
+  )
+}
+
 function UnknownCard({ unknown, value, onChange }) {
   const [mode, setMode] = useState(null)
   const [inputValue, setInputValue] = useState('')
@@ -242,13 +370,8 @@ function UnknownCard({ unknown, value, onChange }) {
     else onChange(null)
   }
 
-  function selectSuggestion(s) {
-    onChange(s)
-  }
-
-  function commitInput() {
-    if (inputValue.trim()) onChange(inputValue.trim())
-  }
+  function selectSuggestion(s) { onChange(s) }
+  function commitInput() { if (inputValue.trim()) onChange(inputValue.trim()) }
 
   const resolved = value !== null
 
@@ -281,7 +404,7 @@ function UnknownCard({ unknown, value, onChange }) {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commitInput()}
             placeholder="Type your answer…"
-            className="flex-1 rounded-md border border-border px-2.5 py-1 text-xs outline-none"
+            className="flex-1 rounded-md border border-border px-2.5 py-1 text-xs outline-none bg-surface-1 text-fg-1"
           />
           <button onClick={commitInput} disabled={!inputValue.trim()} className="px-3 py-1 rounded-md bg-coral text-fg-on-accent text-xs hover:bg-coral-hover disabled:opacity-40 transition-colors">
             Set
@@ -295,11 +418,7 @@ function UnknownCard({ unknown, value, onChange }) {
       {mode === 'suggest' && (
         <div className="mt-1 space-y-1">
           {unknown.suggestions.map((s) => (
-            <button
-              key={s}
-              onClick={() => selectSuggestion(s)}
-              className="block w-full text-left px-2.5 py-1.5 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:bg-coral-soft transition-colors"
-            >
+            <button key={s} onClick={() => selectSuggestion(s)} className="block w-full text-left px-2.5 py-1.5 rounded-md border border-border text-xs text-fg-2 hover:border-border-strong hover:bg-coral-soft transition-colors">
               {s}
             </button>
           ))}

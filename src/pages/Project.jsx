@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLayout } from '../context/LayoutContext'
 import { readArtifact, writeArtifact, listContextFiles, getFileLastModified } from '../lib/fs'
@@ -11,7 +12,7 @@ import { getCliMode } from '../lib/claude'
 
 const ARTIFACT_TYPES = [
   { type: 'prfaq', label: 'PRFAQ', description: 'Press Release & FAQ', hasTemplate: true },
-  { type: 'prd', label: 'PRD', description: 'Product Requirements Document', hasTemplate: false },
+  { type: 'prd', label: 'PRD', description: 'Product Requirements Document', hasTemplate: true },
   { type: 'epics', label: 'Epics', description: 'High-level feature groupings', hasTemplate: false },
   { type: 'user-stories', label: 'User stories', description: 'Granular development tasks', hasTemplate: false },
   { type: 'backlog', label: 'Backlog', description: 'Prioritized work queue', hasTemplate: false },
@@ -170,7 +171,7 @@ export default function Project() {
             {readme === null ? (
               <p className="text-fg-3 text-sm italic">Loading…</p>
             ) : (
-              <ReactMarkdown>{readme}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{readme}</ReactMarkdown>
             )}
           </div>
         )}
@@ -271,6 +272,7 @@ export default function Project() {
             slug={slug}
             project={project}
             artifactKey={generatingArtifact}
+            artifactStatus={artifactStatus}
             onClose={() => {
               setGeneratingArtifact(null)
               Promise.all(
