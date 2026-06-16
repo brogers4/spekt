@@ -267,6 +267,143 @@ export async function incrementPrdRevision({ contentBefore, contentAfter, signal
   return message.content[0].text.trim()
 }
 
+// Generate Epics from PRD and project context
+export async function generateEpics({ readme, contextFiles, prfaqContent, prdContent, template, signal }) {
+  const client = createClient()
+
+  const contextBlock = contextFiles.length
+    ? contextFiles.map((f) => `### ${f.filename}\n${f.content}`).join('\n\n')
+    : '(No context files provided)'
+
+  const stream = await client.messages.stream(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: `You are an expert product manager generating an Epics document. Follow the template and rules below exactly.
+
+TEMPLATE:
+${template}
+
+${prdContent ? `PRD (HIGHEST PRIORITY — primary source of truth for requirements, scope, and traceability):
+${prdContent}
+
+` : ''}${prfaqContent ? `PRFAQ (SECONDARY CONTEXT — product vision, customer framing):
+${prfaqContent}
+
+` : ''}RULES:
+SCOPE:
+- Generate epics that provide full coverage of all requirements in the PRD. Do not miss any PRD-NNN requirement IDs.
+- Do not over-invent epics. A simple project may need only one or two epics. Only create epics for features that are actually in scope.
+- Each epic must be a fully deliverable, user-testable unit of work — not a category or theme.
+
+ORDERING:
+- List epics in recommended implementation order: highest priority and lowest dependency risk first.
+- Dependencies between epics must be reflected in the ordering.
+
+PLANNED SCOPE:
+- Use short, readable feature labels (e.g., "Login and Registration", "Dashboard Overview").
+- Do NOT use "As a user…" format.
+- Group related capabilities into one label. The list is non-exhaustive — enough to convey scope at a glance.
+
+PRD REFERENCES:
+- Include PRD-NNN requirement IDs in each epic's PRD References field when a PRD exists.
+- Every PRD requirement should be traceable to at least one epic.
+
+OPEN QUESTIONS:
+- Use [TBD] prefix for each open question.
+- Omit the Open Questions section entirely for an epic if there are none.
+
+FORMAT:
+- Output only the Epics markdown. No preamble, no commentary.
+- The top of the document must include an anchor-linked list of all epics.`,
+      messages: [
+        {
+          role: 'user',
+          content: `Project README:\n${readme || '(none)'}\n\nContext files:\n${contextBlock}\n\nGenerate the complete Epics document now.`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  let result = ''
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      result += event.delta.text
+    }
+  }
+  return result
+}
+
+// Identify open questions, gaps, and coverage issues after Epics are generated
+export async function generateEpicsReviewItems({ epicsContent, prdContent, signal }) {
+  const client = createClient()
+
+  const message = await client.messages.create(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      system: `You are a senior PM reviewing a newly generated Epics document. Identify open items the author should address before the epics are handed to engineering.
+
+Return ONLY a valid JSON array (no markdown, no explanation) in this format:
+[{ "id": "r1", "type": "question|gap|decision", "title": "Short title (max 10 words)", "detail": "1-2 sentence explanation of what needs to be addressed and why it matters" }]
+
+Focus on:
+- PRD requirements that are not covered by any epic (coverage gaps)
+- [TBD] placeholders that need resolution before implementation begins
+- Ordering or dependency assumptions that may not be correct
+- Epics that seem too broad or too narrow to be deliverable as a unit
+- Missing dependencies that could block implementation
+
+Do NOT flag style, grammar, or formatting. Limit to 8 items maximum. Return [] if the epics are complete and well-structured.`,
+      messages: [
+        {
+          role: 'user',
+          content: `${prdContent ? `PRD (source of truth for requirements):\n${prdContent}\n\n---\n\n` : ''}Epics to review:\n\n${epicsContent}`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  const text = message.content[0].text.trim()
+  const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  try {
+    return JSON.parse(stripped)
+  } catch {
+    console.error('Failed to parse Epics review items:', text)
+    return []
+  }
+}
+
+// Revise Epics based on user feedback on a specific review item
+export async function reviseEpicsFromFeedback({ epicsContent, reviewItem, feedback, signal }) {
+  const client = createClient()
+
+  const stream = await client.messages.stream(
+    {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: `You are an expert product manager revising an Epics document based on specific feedback. Apply the feedback precisely and return the complete updated Epics markdown. Do not add commentary, preamble, or closing remarks — output only the revised Epics document.`,
+      messages: [
+        {
+          role: 'user',
+          content: `Epics to revise:\n\n${epicsContent}\n\n---\n\nReview item being addressed:\nType: ${reviewItem.type}\nTitle: ${reviewItem.title}\nDetail: ${reviewItem.detail}\n\nUser feedback:\n${feedback}\n\nApply this feedback to the Epics document and return the complete revised document.`,
+        },
+      ],
+    },
+    { signal }
+  )
+
+  let result = ''
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      result += event.delta.text
+    }
+  }
+  return result
+}
+
 // Phase 2: generate the full PRFAQ
 export async function generatePrfaq({ readme, contextFiles, answers, template, signal }) {
   const client = createClient()

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { hasApiKey, identifyPrfaqUnknowns, generatePrfaq, generatePrd, generatePrdReviewItems, getAuthor, setAuthor } from '../lib/claude'
-import { readArtifact, writeArtifact, listContextFiles, readContextFile, writePrdReview } from '../lib/fs'
+import { hasApiKey, identifyPrfaqUnknowns, generatePrfaq, generatePrd, generatePrdReviewItems, generateEpics, generateEpicsReviewItems, getAuthor, setAuthor } from '../lib/claude'
+import { readArtifact, writeArtifact, listContextFiles, readContextFile, writePrdReview, writeEpicsReview } from '../lib/fs'
 import prfaqTemplate from '../templates/prfaq.template.md?raw'
 import prdTemplate from '../templates/prd.template.md?raw'
+import epicsTemplate from '../templates/epics.template.md?raw'
 
 const PHASES = { preflight: 0, gathering: 1, questioning: 2, generating: 3 }
 const ARTIFACT_LABELS = { prfaq: 'PRFAQ', prd: 'PRD', epics: 'Epics', 'user-stories': 'User stories', backlog: 'Backlog' }
@@ -21,6 +22,8 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
   // PRD preflight acknowledgements
   const [ackNoPrfaq, setAckNoPrfaq] = useState(false)
   const [ackLowContext, setAckLowContext] = useState(false)
+  // Epics preflight acknowledgement
+  const [ackNoPrd, setAckNoPrd] = useState(false)
   const abortRef = useRef(null)
 
   const apiKeyReady = hasApiKey()
@@ -30,19 +33,24 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
   const label = ARTIFACT_LABELS[type] ?? type
 
   const prfaqKey = `${slug}-prfaq.md`
+  const prdKey = `${slug}-prd.md`
   const prfaqExists = !!artifactStatus[prfaqKey]
+  const prdExists = !!artifactStatus[prdKey]
   const isLowContext = contextCount === 0 && readme !== null && !readme.trim() && !prfaqExists
 
   // PRD-specific warnings
   const showNoPrfaqWarning = type === 'prd' && !prfaqExists
   const showLowContextWarning = type === 'prd' && isLowContext
+  // Epics-specific warning
+  const showNoPrdWarning = type === 'epics' && !prdExists
 
   const startEnabled = apiKeyReady &&
     contextCount !== null &&
     (type !== 'prd' || readme !== null) &&
     (type !== 'prd' || authorInput.trim().length > 0) &&
     (!showNoPrfaqWarning || ackNoPrfaq) &&
-    (!showLowContextWarning || ackLowContext)
+    (!showLowContextWarning || ackLowContext) &&
+    (!showNoPrdWarning || ackNoPrd)
 
   useEffect(() => {
     listContextFiles(slug).then((f) => setContextCount(f.length))
@@ -61,7 +69,8 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
       })
     )
     const prfaqContent = await readArtifact(slug, `${slug}-prfaq.md`)
-    return { readme: rmContent, contextFiles: contextFiles.filter(Boolean), prfaqContent }
+    const prdContent = await readArtifact(slug, `${slug}-prd.md`)
+    return { readme: rmContent, contextFiles: contextFiles.filter(Boolean), prfaqContent, prdContent }
   }
 
   async function start() {
@@ -76,6 +85,19 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
       try {
         const { readme: rm, contextFiles, prfaqContent } = await loadContext()
         await runPrdGeneration({ readme: rm, contextFiles, prfaqContent })
+      } catch (err) {
+        setPhase(PHASES.preflight)
+        if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
+      }
+      return
+    }
+
+    if (type === 'epics') {
+      setGeneratingLabel('Generating your Epics…')
+      setPhase(PHASES.generating)
+      try {
+        const { readme: rm, contextFiles, prfaqContent, prdContent } = await loadContext()
+        await runEpicsGeneration({ readme: rm, contextFiles, prfaqContent, prdContent })
       } catch (err) {
         setPhase(PHASES.preflight)
         if (err.name !== 'AbortError') setError(err.message || "Something didn't go through — try again.")
@@ -124,6 +146,36 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
     setPhase(PHASES.generating)
     const result = await generatePrfaq({ readme: rm, contextFiles, answers: ans, template, signal: abortRef.current.signal })
     await writeArtifact(slug, artifactKey, result)
+    onClose()
+    navigate(`/project/${slug}/artifact/${artifactKey}`)
+  }
+
+  async function runEpicsGeneration({ readme: rm, contextFiles, prfaqContent, prdContent }) {
+    setGeneratingLabel('Generating your Epics…')
+    const epicsResult = await generateEpics({
+      readme: rm,
+      contextFiles,
+      prfaqContent,
+      prdContent,
+      template: epicsTemplate,
+      signal: abortRef.current.signal,
+    })
+    await writeArtifact(slug, artifactKey, epicsResult)
+
+    setGeneratingLabel('Identifying review items…')
+    try {
+      const reviewItems = await generateEpicsReviewItems({
+        epicsContent: epicsResult,
+        prdContent,
+        signal: abortRef.current.signal,
+      })
+      if (reviewItems.length > 0) {
+        await writeEpicsReview(slug, reviewItems)
+      }
+    } catch {
+      // Non-fatal
+    }
+
     onClose()
     navigate(`/project/${slug}/artifact/${artifactKey}`)
   }
@@ -223,6 +275,23 @@ export default function GenerateArtifactModal({ slug, project, artifactKey, arti
                   acknowledged={ackLowContext}
                   onAcknowledge={() => setAckLowContext(true)}
                   message="Very little project information found — the PRD may be largely speculative."
+                />
+              )}
+
+              {/* Epics-specific warnings */}
+              {showNoPrdWarning && (
+                <WarningRow
+                  acknowledged={ackNoPrd}
+                  onAcknowledge={() => setAckNoPrd(true)}
+                  message="Recommended: generate the PRD first — it is the primary source of truth for Epics."
+                  action={
+                    <button
+                      onClick={() => { onClose(); navigate(`/project/${slug}`, { state: { generateArtifact: `${slug}-prd.md` } }) }}
+                      className="text-amber-400 underline whitespace-nowrap"
+                    >
+                      Generate PRD
+                    </button>
+                  }
                 />
               )}
 

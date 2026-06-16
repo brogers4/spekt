@@ -4,8 +4,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLayout } from '../context/LayoutContext'
-import { readArtifact, writeArtifact, deleteArtifact, readPrdReview, writePrdReview } from '../lib/fs'
-import { revisePrdFromFeedback, incrementPrdRevision } from '../lib/claude'
+import { readArtifact, writeArtifact, deleteArtifact, readPrdReview, writePrdReview, readEpicsReview, writeEpicsReview } from '../lib/fs'
+import { revisePrdFromFeedback, incrementPrdRevision, reviseEpicsFromFeedback } from '../lib/claude'
 import { useMarkdownEditor } from '../hooks/useMarkdownEditor'
 
 const ARTIFACT_LABELS = {
@@ -82,7 +82,7 @@ function ReviewPanel({ items, onDismiss, onSubmitFeedback }) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <span className="text-sm font-semibold text-amber-400">Revising PRD…</span>
+              <span className="text-sm font-semibold text-amber-400">Revising…</span>
               <button
                 onClick={cancelProcessing}
                 className="text-xs text-amber-500 hover:text-amber-300 underline transition-colors"
@@ -134,7 +134,7 @@ function ReviewPanel({ items, onDismiss, onSubmitFeedback }) {
             <p className="text-sm font-semibold text-fg-1 leading-snug">{item.title}</p>
             <p className="text-xs text-fg-3 mt-1 leading-relaxed">{item.detail}</p>
             {isProcessing && processingId === item.id && (
-              <p className="text-xs text-amber-400/70 mt-1 italic">Revising PRD based on your feedback…</p>
+              <p className="text-xs text-amber-400/70 mt-1 italic">Revising based on your feedback…</p>
             )}
           </div>
         </div>
@@ -202,6 +202,7 @@ export default function ArtifactView() {
   const { projects } = useWorkspace()
   const [content, setContent] = useState(null)
   const [reviewItems, setReviewItems] = useState([])
+  const [revisionNote, setRevisionNote] = useState(null)
   const [showRevisionPrompt, setShowRevisionPrompt] = useState(false)
   const [revisionLoading, setRevisionLoading] = useState(false)
   const [confirmRegenerate, setConfirmRegenerate] = useState(false)
@@ -216,6 +217,7 @@ export default function ArtifactView() {
     : filename.replace(/\.md$/, '')
   const label = ARTIFACT_LABELS[type] ?? type
   const isPrd = type === 'prd'
+  const isEpics = type === 'epics'
   const { setTitle, setCrumbs, setBack } = useLayout()
 
   useEffect(() => {
@@ -244,27 +246,32 @@ export default function ArtifactView() {
   useEffect(() => {
     if (!slug || !filename) return
     readArtifact(slug, filename).then((text) => setContent(text ?? ''))
-    if (isPrd) {
-      readPrdReview(slug).then(setReviewItems)
-    }
+    if (isPrd) readPrdReview(slug).then(setReviewItems)
+    else if (isEpics) readEpicsReview(slug).then(setReviewItems)
   }, [slug, filename])
+
+  const writeReview = isPrd ? writePrdReview : writeEpicsReview
 
   const dismissItem = async (id) => {
     const updated = reviewItems.map((i) => i.id === id ? { ...i, dismissed: true } : i)
     setReviewItems(updated)
-    await writePrdReview(slug, updated)
+    await writeReview(slug, updated)
   }
 
   const handleFeedback = async (item, feedbackText, signal) => {
-    const revised = await revisePrdFromFeedback({
-      prdContent: content,
-      reviewItem: item,
-      feedback: feedbackText,
-      signal,
-    })
+    let revised
+    if (isPrd) {
+      revised = await revisePrdFromFeedback({ prdContent: content, reviewItem: item, feedback: feedbackText, signal })
+    } else {
+      revised = await reviseEpicsFromFeedback({ epicsContent: content, reviewItem: item, feedback: feedbackText, signal })
+    }
     await writeArtifact(slug, filename, revised)
     setContent(revised)
     await dismissItem(item.id)
+    if (isEpics) {
+      setRevisionNote('Epics updated based on your feedback.')
+      setTimeout(() => setRevisionNote(null), 3000)
+    }
   }
 
   const applyRevision = async () => {
@@ -290,8 +297,9 @@ export default function ArtifactView() {
     try {
       await deleteArtifact(slug, filename)
       if (isPrd) {
-        // Also delete the review sidecar
         try { await deleteArtifact(slug, `${slug}-prd-review.json`) } catch { /* ignore */ }
+      } else if (isEpics) {
+        try { await deleteArtifact(slug, `${slug}-epics-review.json`) } catch { /* ignore */ }
       }
       navigate(`/project/${slug}`)
     } catch (e) {
@@ -314,12 +322,18 @@ export default function ArtifactView() {
 
   return (
     <div className="max-w-[720px] mx-auto py-10 px-8">
-      {isPrd && activeReviewItems.length > 0 && (
+      {(isPrd || isEpics) && activeReviewItems.length > 0 && (
         <ReviewPanel
           items={reviewItems}
           onDismiss={dismissItem}
           onSubmitFeedback={handleFeedback}
         />
+      )}
+
+      {revisionNote && (
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">
+          {revisionNote}
+        </div>
       )}
 
       <div className="rounded-lg border border-border bg-surface-2 shadow-sm overflow-hidden">

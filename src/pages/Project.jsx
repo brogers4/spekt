@@ -13,7 +13,7 @@ import { getCliMode } from '../lib/claude'
 const ARTIFACT_TYPES = [
   { type: 'prfaq', label: 'PRFAQ', description: 'Press Release & FAQ', hasTemplate: true },
   { type: 'prd', label: 'PRD', description: 'Product Requirements Document', hasTemplate: true },
-  { type: 'epics', label: 'Epics', description: 'High-level feature groupings', hasTemplate: false },
+  { type: 'epics', label: 'Epics', description: 'High-level feature groupings', hasTemplate: true },
   { type: 'user-stories', label: 'User stories', description: 'Granular development tasks', hasTemplate: false },
   { type: 'backlog', label: 'Backlog', description: 'Prioritized work queue', hasTemplate: false },
 ]
